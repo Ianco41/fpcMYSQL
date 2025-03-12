@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FPC</title>
+    <title>format</title>
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/all.min.css">
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/fontawesome.min.css">
@@ -171,7 +171,7 @@
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div class="sidebar-logo">
-                    <a href="#">LOGO</a>
+                    <a href="#">MENU</a>
                 </div>
             </div>
             <ul class="sidebar-nav">
@@ -188,9 +188,9 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
+                    <a href="tables.php" class="sidebar-link">
                         <i class="fa-regular fa-address-card"></i>
-                        <span>NCPR List</span>
+                        <span>Tables</span>
                     </a>
                 </li>
                 <li class="sidebar-item">
@@ -222,7 +222,7 @@
         <div class="main p-3">
             <div class="row">
                 <div class="col-md-6 col-lg-3">
-                    <a href="ncprlist.php" class="text-decoration-none">
+                    <a href="#" class="text-decoration-none">
                         <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
                             <div class="card border-0 shadow-sm flex-fill hover-shadow">
                                 <div class="card-body p-0 d-flex flex-fill">
@@ -243,7 +243,7 @@
                     </a>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <a href="ncprlist.php" class="text-decoration-none">
+                    <a href="#" class="text-decoration-none">
                         <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
                             <div class="card border-0 shadow-sm flex-fill hover-shadow">
                                 <div class="card-body p-0 d-flex flex-fill">
@@ -264,7 +264,7 @@
                     </a>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <a href="productkey.php" class="text-decoration-none">
+                    <a href="#" class="text-decoration-none">
                         <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
                             <div class="card border-0 shadow-sm flex-fill hover-shadow">
                                 <div class="card-body p-0 d-flex flex-fill">
@@ -285,7 +285,7 @@
                     </a>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <a href="status.php" class="text-decoration-none">
+                    <a href="#" class="text-decoration-none">
                         <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
                             <div class="card border-0 shadow-sm flex-fill hover-shadow">
                                 <div class="card-body p-0 d-flex flex-fill">
@@ -323,28 +323,7 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>1</td>
-                                    <td>Project A</td>
-                                    <td>Open</td>
-                                    <td>2024-03-01</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Project B</td>
-                                    <td>Closed</td>
-                                    <td>2024-02-28</td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>Project C</td>
-                                    <td>In Progress</td>
-                                    <td>2024-02-27</td>
-                                </tr>
-                                <tr>
-                                    <td>4</td>
-                                    <td>Project D</td>
-                                    <td>Open</td>
-                                    <td>2024-02-26</td>
+                                    
                                 </tr>
                             </tbody>
                         </table>
@@ -358,35 +337,6 @@
     <script src="assets/vendor/bootstrap/js/all.min.js"></script>
     <script src="assets/vendor/bootstrap/js/fontawesome.min.js"></script>
     <script src="assets/DataTables/datatables.min.js"></script>
-    <!-- DataTable Initialization -->
-    <script>
-        $(document).ready(function() {
-            $('#ncprTable').DataTable({
-                dom: 'Bfrtip',
-                buttons: [{
-                        extend: 'excelHtml5',
-                        text: 'Export Excel',
-                        className: 'btn btn-success'
-                    },
-                    {
-                        extend: 'csvHtml5',
-                        text: 'Export CSV',
-                        className: 'btn btn-primary'
-                    },
-                    {
-                        extend: 'pdfHtml5',
-                        text: 'Export PDF',
-                        className: 'btn btn-danger'
-                    },
-                    {
-                        extend: 'print',
-                        text: 'Print',
-                        className: 'btn btn-warning'
-                    }
-                ]
-            });
-        });
-    </script>
     <script>
         const hamBurger = document.querySelector(".toggle-btn");
 

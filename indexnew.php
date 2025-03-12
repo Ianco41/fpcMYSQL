@@ -227,21 +227,9 @@ if ($db_type == "access") {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
+                    <a href="tables.php" class="sidebar-link">
                         <i class="fa-regular fa-address-card"></i>
-                        <span>NCPR List</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                        <i class="fa-solid fa-helmet-safety"></i>
-                        <span>Product Key</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                        <i class="fa-solid fa-paperclip"></i>
-                        <span>Engineer List</span>
+                        <span>Tables</span>
                     </a>
                 </li>
                 <li class="sidebar-item">
@@ -261,7 +249,7 @@ if ($db_type == "access") {
         <div class="main p-3">
             <div class="row">
                 <div class="col-md-6 col-lg-3">
-                    <a href="ncprlist.php" class="text-decoration-none">
+                    <a href="#" class="text-decoration-none">
                         <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
                             <div class="card border-0 shadow-sm flex-fill hover-shadow">
                                 <div class="card-body p-0 d-flex flex-fill">
@@ -282,7 +270,7 @@ if ($db_type == "access") {
                     </a>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <a href="ncprlist.php" class="text-decoration-none">
+                    <a href="#" class="text-decoration-none">
                         <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
                             <div class="card border-0 shadow-sm flex-fill hover-shadow">
                                 <div class="card-body p-0 d-flex flex-fill">
@@ -303,7 +291,7 @@ if ($db_type == "access") {
                     </a>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <a href="productkey.php" class="text-decoration-none">
+                    <a href="#" class="text-decoration-none">
                         <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
                             <div class="card border-0 shadow-sm flex-fill hover-shadow">
                                 <div class="card-body p-0 d-flex flex-fill">
@@ -324,7 +312,7 @@ if ($db_type == "access") {
                     </a>
                 </div>
                 <div class="col-md-6 col-lg-3">
-                    <a href="status.php" class="text-decoration-none">
+                    <a href="#" class="text-decoration-none">
                         <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
                             <div class="card border-0 shadow-sm flex-fill hover-shadow">
                                 <div class="card-body p-0 d-flex flex-fill">
@@ -408,10 +396,10 @@ if ($db_type == "access") {
                                     echo "<tr class='table-row' id='triggerElement' data-bs-toggle='modal' data-bs-target='#reservationModal' 
                                     ";
                                     // Add data-* attributes dynamically
-        foreach ($data_columns as $column) {
-            echo " data-" . strtolower(str_replace('_', '-', $column)) . "='" . htmlspecialchars($row[$column] ?? '') . "'";
-        }
-        echo ">";
+                                    foreach ($data_columns as $column) {
+                                        echo " data-" . strtolower(str_replace('_', '-', $column)) . "='" . htmlspecialchars($row[$column] ?? '') . "'";
+                                    }
+                                    echo ">";
 
                                     // Output table cells for each row
                                     foreach ($data_columns as $column) {
@@ -434,28 +422,37 @@ if ($db_type == "access") {
                     </div>
                 </div>
             </div>
+            <div class="card mt-5">
+                <div class="card-body">
+                    <div class="card-title">
+                        <h5 class="mb-3">Informative Charts</h5>
+                    </div>
+                    <div class="table-container table-responsive mt-3">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <!-- Bootstrap Modal -->
-<div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel">Row Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Content will be inserted here dynamically -->
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-primary edit-btn-modal">Edit</button>
-                <button type="button" class="btn btn-danger delete-btn-modal">Delete</button>
+    <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Row Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Content will be inserted here dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary edit-btn-modal">Edit</button>
+                    <button type="button" class="btn btn-danger delete-btn-modal">Delete</button>
 
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
     <script src="assets/vendor/bootstrap/js/jquery.min.js"></script>
@@ -507,28 +504,28 @@ if ($db_type == "access") {
             });
 
             document.querySelectorAll(".table-row").forEach(row => {
-        row.addEventListener("click", function() {
-            const modalBody = document.querySelector("#reservationModal .modal-body");
-            let modalContent = "<div class='container'><div class='row'>";
+                row.addEventListener("click", function() {
+                    const modalBody = document.querySelector("#reservationModal .modal-body");
+                    let modalContent = "<div class='container'><div class='row'>";
 
-            // Extract all data-* attributes
-            Array.from(this.attributes).forEach(attr => {
-                if (attr.name.startsWith("data-")) {
-                    const key = attr.name.replace("data-", "").replace("-", " ").toUpperCase();
-                    const value = attr.value.trim() !== "" ? attr.value : "N/A"; // Handle empty values
+                    // Extract all data-* attributes
+                    Array.from(this.attributes).forEach(attr => {
+                        if (attr.name.startsWith("data-")) {
+                            const key = attr.name.replace("data-", "").replace("-", " ").toUpperCase();
+                            const value = attr.value.trim() !== "" ? attr.value : "N/A"; // Handle empty values
 
-                    modalContent += `
+                            modalContent += `
                         <div class='col-md-6 mb-2'>
                             <strong>${key}:</strong> ${value}
                         </div>
                     `;
-                }
-            });
+                        }
+                    });
 
-            modalContent += "</div></div>";
-            modalBody.innerHTML = modalContent;
-        });
-    });
+                    modalContent += "</div></div>";
+                    modalBody.innerHTML = modalContent;
+                });
+            });
 
         });
     </script>

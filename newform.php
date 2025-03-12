@@ -136,6 +136,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/fontawesome.min.css">
     <link rel="stylesheet" href="assets/DataTables/datatables.min.css" />
     <style>
+        .card-body {
+            width: 100%;
+        }
+
         /* Hide the default spinner buttons on number input */
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
@@ -474,7 +478,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="card-title">
                         <h5 class="mb-3">FPC New Entry</h5>
                     </div>
-                    <div class="table-container table-responsive mt-3">
+                    <div class="table-container mt-3">
                         <form method="post" id="recordForm">
                             <div id="recordContainer">
                                 <div class="record-entry">
@@ -561,15 +565,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <input type="number" class="form-control reject-input" name="REJECT[]" required>
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-danger btn-sm remove-record">Remove</button>
+                                    <div class="d-flex justify-content-end">
+                                        <button type="button" class="btn btn-danger btn-sm remove-record">Remove</button>
+                                    </div>
                                     <hr>
                                 </div>
                             </div>
 
-                            <div class="d-grid gap-2" style="max-width: 60%; margin: 0 auto;">
+                            <div class="d-flex justify-content-end gap-2" style=" margin: 0 auto;">
                                 <button type="button" class="btn btn-info" id="addMore">Add More</button>
                                 <button type="submit" class="btn btn-success">Submit</button>
-                                <a href="index.php" class="btn btn-danger" role="button">Cancel</a>
+                                <!-- <a href="index.php" class="btn btn-danger" role="button">Cancel</a> -->
                             </div>
                         </form>
 
@@ -660,6 +666,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if (this.fetchPartName) {
                         this.fetchPartName(item.textContent);
                     }
+                    // Move to the next input field if available
+                    let formElements = Array.from(document.querySelectorAll("input, select, textarea"));
+                    let currentIndex = formElements.indexOf(this.input);
+
+                    if (currentIndex >= 0 && currentIndex < formElements.length - 1) {
+                        formElements[currentIndex + 1].focus();
+                    }
+
+                    // Reset activeIndex
+                    this.activeIndex = -1;
                 }
 
                 showSuggestions(filteredList) {
@@ -674,6 +690,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             // Handle click selection
                             div.addEventListener("click", () => this.handleSelection(div));
                             this.suggestionBox.appendChild(div);
+                        });
+                        // Add event listener to keep the dropdown open when interacting with it
+                        this.suggestionBox.addEventListener("mousedown", (event) => {
+                            event.preventDefault(); // Prevent input blur when clicking suggestions
+                        });
+
+                        // Add event listener to hide dropdown when input loses focus
+                        this.input.addEventListener("blur", () => {
+                            setTimeout(() => {
+                                this.suggestionBox.style.display = "none";
+                            }, 200); // Delay to allow click events to register
                         });
                     } else {
                         this.suggestionBox.style.display = "none";
@@ -780,7 +807,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     super(input, dropdownButton, suggestionBox, fetchUrl);
                     this.productNameInput = productNameInput;
                     this.partNameFetchUrl = partNameFetchUrl;
+                    this.suggestions = []; // Store suggestions
+
+                    // Listen for input changes
+                    this.input.addEventListener("input", () => {
+                        if (!this.suggestions.includes(this.input.value.trim())) {
+                            this.productNameInput.value = ""; // Clear product name if input is not from suggestions
+                        }
+                    });
                 }
+
 
                 async fetchPartName(partNumber) {
                     try {
@@ -790,7 +826,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         if (data.success && data.PARTNAME) {
                             this.productNameInput.value = data.PARTNAME;
                         } else {
-                            this.productNameInput.value = "Not found";
+                            this.productNameInput.value = "";
                         }
                     } catch (error) {
                         console.error("Error fetching part name:", error);
@@ -996,7 +1032,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         new SuggestionDropdown("issues_input", "dropdown_issues", "issues_suggestions", "fetch_issues.php");
         //new SuggestionDropdown("parnum_input", "dropdown_parnum", "parnum_suggestions", "fetch_partnum.php");
     </script>-->
-    <script>
+    <!--<script>
         class PartNumberDropdown extends SuggestionDropdown {
             constructor(inputId, dropdownButtonId, suggestionBoxId, fetchUrl, productNameInputId, partNameFetchUrl) {
                 super(inputId, dropdownButtonId, suggestionBoxId, fetchUrl);
@@ -1044,7 +1080,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Initialize for part number input
         new PartNumberDropdown("parnum_input", "dropdown_parnum", "parnum_suggestions", "fetch_partnum.php", "product_name", "fetch_partname.php");
-    </script>
+    </script>-->
 
     <!-- ALTERNATIVE FOR POPULATING PRODUCT NAME -->
     <!-- <script>
@@ -1076,31 +1112,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $(window).resize(adjustWidth);
         });
         document.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-        let activeElement = document.activeElement;
+            if (event.key === "Tab") {
+                let activeElement = document.activeElement;
 
-        // Check if the active element is an input, select, or textarea
-        if (["INPUT", "SELECT", "TEXTAREA"].includes(activeElement.tagName)) {
-            event.preventDefault(); // Prevent default form submission
+                // Check if the active element is an input, select, or textarea
+                if (["INPUT", "SELECT", "TEXTAREA"].includes(activeElement.tagName)) {
+                    event.preventDefault(); // Prevent default form submission
 
-            // Find the closest form section (.record-entry) to scope the search
-            let formSection = activeElement.closest(".record-entry");
+                    // Find the closest form section (.record-entry) to scope the search
+                    let formSection = activeElement.closest(".record-entry");
 
-            if (formSection) {
-                // Get all visible and enabled input/select/textarea elements within the same form section
-                let formElements = Array.from(formSection.querySelectorAll("input, select, textarea"))
-                    .filter(el => el.offsetParent !== null && !el.disabled); // Only focusable elements
+                    if (formSection) {
+                        // Get all visible and enabled input/select/textarea elements within the same form section
+                        let formElements = Array.from(formSection.querySelectorAll("input, select, textarea"))
+                            .filter(el => el.offsetParent !== null && !el.disabled); // Only focusable elements
 
-                let currentIndex = formElements.indexOf(activeElement);
+                        let currentIndex = formElements.indexOf(activeElement);
 
-                if (currentIndex >= 0 && currentIndex < formElements.length - 1) {
-                    formElements[currentIndex + 1].focus(); // Move to the correct next input field
+                        if (currentIndex >= 0 && currentIndex < formElements.length - 1) {
+                            formElements[currentIndex + 1].focus(); // Move to the correct next input field
+                        }
+                    }
                 }
             }
-        }
-    }
-});
-
+        });
     </script>
 </body>
 
