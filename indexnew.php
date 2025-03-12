@@ -227,7 +227,7 @@ if ($db_type == "access") {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="ncprlist.php" class="sidebar-link">
+                    <a href="#" class="sidebar-link">
                         <i class="fa-regular fa-address-card"></i>
                         <span>NCPR List</span>
                     </a>
@@ -590,6 +590,13 @@ if ($db_type == "access") {
                 column.visible(!column.visible());
             });
         })
+    </script>
+    <script>
+        // JavaScript to trigger automatic form submission when a new year is selected
+        document.getElementById("year").addEventListener("change", function() {
+            // Submit the form when the user selects a new year
+            document.getElementById("year-form").submit();
+        });
     </script>
 </body>
 
