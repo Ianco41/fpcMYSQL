@@ -206,6 +206,34 @@ mysqli_close($conn);
             color: white;
         }
     </style>
+    <style>
+        /* Add subtle box shadow */
+        table.dataTable {
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Style the search input */
+        div.dataTables_filter input {
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        /* Make pagination buttons more stylish */
+        .dataTables_paginate .paginate_button {
+            background-color: #007bff !important;
+            color: white !important;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin: 3px;
+        }
+
+        /* Highlight active pagination button */
+        .dataTables_paginate .paginate_button.current {
+            background-color: #0056b3 !important;
+        }
+    </style>
 </head>
 
 <body class="bg-white">
@@ -342,48 +370,31 @@ mysqli_close($conn);
             <!-- Table Row -->
             <div class="container mt-4">
                 <div class="row">
-                    <?php foreach ($tables as $table => $columns) : ?>
+                    <?php
+                    $tables = ["product_list", "category_tbl", "trigger_tbl", "issue_tbl"];
+                    foreach ($tables as $table) : ?>
                         <div class="col-md-6 mb-4">
                             <div class="card shadow-sm">
                                 <div class="card-body">
-                                    <h5 class="card-title mb-3"><?php echo strtoupper(str_replace("_tbl", " ", $table)); ?> Table</h5>
+                                    <h5 class="card-title mb-3"><?php echo strtoupper(str_replace("_", " ", $table)); ?> Table</h5>
                                     <div class="table-responsive">
-                                        <table class="table table-bordered table-hover">
+                                        <table id="<?php echo $table; ?>" class="table table-striped table-bordered table-hover" style="width:100%">
                                             <thead class="table-secondary">
                                                 <tr>
-                                                    <?php foreach ($columns as $column) : ?>
+                                                    <?php
+                                                    $columns = [
+                                                        "product_list" => ["ID", "PARTNUMBER", "PARTNAME"],
+                                                        "category_tbl" => ["ID", "NAME"],
+                                                        "trigger_tbl" => ["ID", "NAME"],
+                                                        "issue_tbl" => ["ID", "NAME"]
+                                                    ];
+                                                    foreach ($columns[$table] as $column) : ?>
                                                         <th><?php echo htmlspecialchars($column); ?></th>
                                                     <?php endforeach; ?>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                <?php if (!empty($data[$table])) : ?>
-                                                    <?php foreach ($data[$table] as $row) : ?>
-                                                        <tr>
-                                                            <?php foreach ($columns as $column) : ?>
-                                                                <td><?php echo htmlspecialchars($row[$column] ?? ''); ?></td>
-                                                            <?php endforeach; ?>
-                                                        </tr>
-                                                    <?php endforeach; ?>
-                                                <?php else : ?>
-                                                    <tr>
-                                                        <td colspan="<?php echo count($columns); ?>" class="text-center">No Data Found</td>
-                                                    </tr>
-                                                <?php endif; ?>
-                                            </tbody>
                                         </table>
                                     </div>
-
-                                    <!-- Pagination -->
-                                    <nav>
-                                        <ul class="pagination">
-                                            <?php for ($i = 1; $i <= $total_pages[$table]; $i++) : ?>
-                                                <li class="page-item">
-                                                    <a class="page-link" href="?<?php echo $table . '_page=' . $i; ?>"><?php echo $i; ?></a>
-                                                </li>
-                                            <?php endfor; ?>
-                                        </ul>
-                                    </nav>
                                 </div>
                             </div>
                         </div>
@@ -392,11 +403,14 @@ mysqli_close($conn);
             </div>
         </div>
     </div>
+    
     <script src="assets/vendor/bootstrap/js/jquery.min.js"></script>
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/bootstrap/js/all.min.js"></script>
     <script src="assets/vendor/bootstrap/js/fontawesome.min.js"></script>
+    <script src="assets/js/jquery.min.js"></script>
     <script src="assets/DataTables/datatables.min.js"></script>
+
     <script>
         const hamBurger = document.querySelector(".toggle-btn");
 
@@ -411,6 +425,83 @@ mysqli_close($conn);
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
         });
+    </script>
+    <script>
+        $(document).ready(function() {
+            let tables = ["product_list", "category_tbl", "trigger_tbl", "issue_tbl"];
+
+            tables.forEach(table => {
+                $('#' + table).DataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "ajax": {
+                        "url": "table_data.php",
+                        "type": "GET",
+                        "data": {
+                            table: table
+                        }
+                    },
+                    "order": [
+                        [0, "asc"]
+                    ],
+                    "lengthMenu": [
+                        [10, 25, 50, 100],
+                        [10, 25, 50, 100]
+                    ],
+                    "columns": getColumnConfig(table),
+                    "responsive": true, // Enable mobile responsiveness
+                    "pagingType": "full_numbers", // Show full pagination controls
+                    "language": {
+                        "search": "🔍 Search:",
+                        "lengthMenu": "Show _MENU_ entries per page",
+                        "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                        "paginate": {
+                            "first": "⏮ First",
+                            "last": "⏭ Last",
+                            "next": "➡ Next",
+                            "previous": "⬅ Prev"
+                        }
+                    }
+                });
+            });
+        });
+
+        function getColumnConfig(table) {
+            const columns = {
+                "product_list": [{
+                        "data": "ID"
+                    },
+                    {
+                        "data": "PARTNUMBER"
+                    },
+                    {
+                        "data": "PARTNAME"
+                    }
+                ],
+                "category_tbl": [{
+                        "data": "ID"
+                    },
+                    {
+                        "data": "name"
+                    }
+                ],
+                "trigger_tbl": [{
+                        "data": "ID"
+                    },
+                    {
+                        "data": "name"
+                    }
+                ],
+                "issue_tbl": [{
+                        "data": "ID"
+                    },
+                    {
+                        "data": "name"
+                    }
+                ]
+            };
+            return columns[table];
+        }
     </script>
 </body>
 

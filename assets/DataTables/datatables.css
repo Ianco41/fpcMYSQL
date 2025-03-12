@@ -4,13 +4,12 @@
  *
  * To rebuild or modify this file with the latest versions of the included
  * software please visit:
- *   https://datatables.net/download/#bs5/jq-3.7.0/pdfmake-0.2.7/dt-2.2.0/b-3.2.0/b-colvis-3.2.0/b-html5-3.2.0/b-print-3.2.0/cr-2.0.4/date-1.5.5/fc-5.0.4/r-3.0.3/rg-1.5.1/sc-2.4.3/sb-1.8.1/sp-2.3.3/sr-1.4.1
+ *   https://datatables.net/download/#bs5/jq-3.7.0/jszip-3.10.1/pdfmake-0.2.7/dt-2.2.2/af-2.7.0/b-3.2.2/b-colvis-3.2.2/b-html5-3.2.2/b-print-3.2.2/cr-2.0.4/date-1.5.5/fc-5.0.4/fh-4.0.1/kt-2.12.1/r-3.0.4/rg-1.5.1/rr-1.5.0/sc-2.4.3/sb-1.8.2/sp-2.3.3/sl-3.0.0/sr-1.4.1
  *
  * Included libraries:
- *   jQuery 3 3.7.0, pdfmake 0.2.7, DataTables 2.2.0, Buttons 3.2.0, Column visibility 3.2.0, HTML5 export 3.2.0, Print view 3.2.0, ColReorder 2.0.4, DateTime 1.5.5, FixedColumns 5.0.4, Responsive 3.0.3, RowGroup 1.5.1, Scroller 2.4.3, SearchBuilder 1.8.1, SearchPanes 2.3.3, StateRestore 1.4.1
+ *   jQuery 3.7.0, JSZip 3.10.1, pdfmake 0.2.7, DataTables 2.2.2, AutoFill 2.7.0, Buttons 3.2.2, Column visibility 3.2.2, HTML5 export 3.2.2, Print view 3.2.2, ColReorder 2.0.4, DateTime 1.5.5, FixedColumns 5.0.4, FixedHeader 4.0.1, KeyTable 2.12.1, Responsive 3.0.4, RowGroup 1.5.1, RowReorder 1.5.0, Scroller 2.4.3, SearchBuilder 1.8.2, SearchPanes 2.3.3, Select 3.0.0, StateRestore 1.4.1
  */
 
-@charset "UTF-8";
 :root {
   --dt-row-selected: 13, 110, 253;
   --dt-row-selected-text: 255, 255, 255;
@@ -93,8 +92,8 @@ table.dataTable thead > tr > td.dt-ordering-asc span.dt-column-order:before {
   position: absolute;
   display: block;
   bottom: 50%;
-  content: "▲";
-  content: "▲"/"";
+  content: "\25B2";
+  content: "\25B2"/"";
 }
 table.dataTable thead > tr > th.dt-orderable-desc span.dt-column-order:after, table.dataTable thead > tr > th.dt-ordering-desc span.dt-column-order:after,
 table.dataTable thead > tr > td.dt-orderable-desc span.dt-column-order:after,
@@ -102,8 +101,8 @@ table.dataTable thead > tr > td.dt-ordering-desc span.dt-column-order:after {
   position: absolute;
   display: block;
   top: 50%;
-  content: "▼";
-  content: "▼"/"";
+  content: "\25BC";
+  content: "\25BC"/"";
 }
 table.dataTable thead > tr > th.dt-orderable-asc, table.dataTable thead > tr > th.dt-orderable-desc, table.dataTable thead > tr > th.dt-ordering-asc, table.dataTable thead > tr > th.dt-ordering-desc,
 table.dataTable thead > tr > td.dt-orderable-asc,
@@ -530,6 +529,148 @@ div.table-responsive > div.dt-container > div.row > div[class^=col-]:last-child 
 }
 
 
+div.dt-autofill-handle {
+  position: absolute;
+  height: 10px;
+  width: 10px;
+  z-index: 10;
+  box-sizing: border-box;
+  background: #0d6efd;
+  cursor: pointer;
+}
+
+div.dtk-focus-alt div.dt-autofill-handle {
+  background: #ff8b33;
+}
+
+div.dt-autofill-select {
+  position: absolute;
+  z-index: 1001;
+  background-color: #0d6efd;
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.5) 5px, rgba(255, 255, 255, 0.5) 10px);
+}
+div.dt-autofill-select.top, div.dt-autofill-select.bottom {
+  height: 3px;
+  margin-top: -1px;
+}
+div.dt-autofill-select.left, div.dt-autofill-select.right {
+  width: 3px;
+  margin-left: -1px;
+}
+
+div.dt-autofill-list {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 500px;
+  margin-left: -250px;
+  background-color: white;
+  border-radius: 0.75em;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  z-index: 104;
+  box-sizing: border-box;
+  padding: 2em;
+}
+div.dt-autofill-list div.dtaf-popover-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  text-align: center;
+  border-radius: 3px;
+  cursor: pointer;
+  z-index: 12;
+}
+div.dt-autofill-list > div.dt-autofill-list-items > button {
+  display: block;
+  width: 100%;
+  margin: 1em 0;
+  padding: 1em;
+  border-radius: 0.5em;
+  border: 1px solid rgba(0, 0, 0, 0.175);
+  background-color: #f6f6f6;
+  text-align: left;
+  cursor: pointer;
+}
+div.dt-autofill-list > div.dt-autofill-list-items > button:hover {
+  background-color: #ebebeb;
+}
+div.dt-autofill-list > div.dt-autofill-list-items > button:first-child {
+  margin-top: 0;
+}
+div.dt-autofill-list > div.dt-autofill-list-items > button:last-child {
+  margin-bottom: 0;
+}
+div.dt-autofill-list > div.dt-autofill-list-items > button input[type=number] {
+  display: inline-block;
+  box-sizing: border-box;
+  padding: 6px;
+  width: 70px;
+  margin: -2px 0;
+}
+div.dt-autofill-list > div.dt-autofill-list-items > button span {
+  float: right;
+}
+
+div.dtaf-popover-closeable {
+  padding-top: 2.5em;
+}
+
+div.dt-autofill-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  background: radial-gradient(ellipse farthest-corner at center, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%);
+  z-index: 103;
+}
+
+html.dark div.dt-autofill-handle {
+  background: rgb(110, 168, 254);
+}
+html.dark div.dt-autofill-select {
+  position: absolute;
+  z-index: 1001;
+  background-color: rgb(110, 168, 254);
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0, 0, 0, 0.5) 5px, rgba(0, 0, 0, 0.5) 10px);
+}
+html.dark div.dt-autofill-list {
+  background-color: var(--dt-html-background);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+html.dark div.dt-autofill-list button {
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.175);
+  background-color: rgb(47, 52, 56);
+}
+html.dark div.dt-autofill-list button:hover {
+  background-color: rgb(64, 69, 73);
+}
+
+@media screen and (max-width: 767px) {
+  div.dt-autofill-handle {
+    height: 16px;
+    width: 16px;
+  }
+  div.dt-autofill-list {
+    width: 90%;
+    left: 74.5%;
+  }
+}
+div.dt-autofill-list div.dt-autofill-question input[type=number] {
+  padding: 6px;
+  width: 60px;
+  margin: -2px 0;
+}
+
+div.row.dt-row > div.col-sm-12 {
+  position: relative;
+}
+
+
 @keyframes dtb-spinner {
   100% {
     transform: rotate(360deg);
@@ -703,172 +844,8 @@ div.dt-button-collection span.dt-button-spacer.bar {
     box-shadow: none !important;
   }
 }
-html.dark div.dt-button-info {
-  background-color: var(--dt-html-background);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
 div.dt-buttons div.btn-group {
   position: initial;
-}
-div.dt-buttons div.dropdown-menu {
-  margin-top: 4px;
-  width: 200px;
-}
-div.dt-buttons div.dropdown-menu .dt-button {
-  position: relative;
-}
-div.dt-buttons div.dropdown-menu .dt-button.dropdown-toggle::after {
-  position: absolute;
-  right: 12px;
-  top: 14px;
-}
-div.dt-buttons div.dropdown-menu div.dt-button-split {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-content: flex-start;
-  align-items: stretch;
-}
-div.dt-buttons div.dropdown-menu div.dt-button-split a:first-child {
-  min-width: auto;
-  flex: 1 0 50px;
-  padding-right: 0;
-}
-div.dt-buttons div.dropdown-menu div.dt-button-split button:last-child {
-  min-width: 33px;
-  flex: 0;
-  background: transparent;
-  border: none;
-  line-height: 1rem;
-  color: var(--bs-dropdown-link-color);
-  padding: var(--bs-dropdown-item-padding-y) var(--bs-dropdown-item-padding-x);
-  overflow: visible;
-}
-div.dt-buttons div.dropdown-menu div.dt-button-split button:last-child:hover {
-  color: var(--bs-dropdown-link-hover-color);
-  background-color: var(--bs-dropdown-link-hover-bg);
-}
-div.dt-buttons div.dropdown-menu.fixed {
-  position: fixed;
-  display: block;
-  top: 50%;
-  left: 50%;
-  margin-left: -75px;
-  border-radius: 5px;
-  background-color: white;
-  padding: 0.5em;
-}
-div.dt-buttons div.dropdown-menu.fixed.two-column {
-  margin-left: -200px;
-}
-div.dt-buttons div.dropdown-menu.fixed.three-column {
-  margin-left: -225px;
-}
-div.dt-buttons div.dropdown-menu.fixed.four-column {
-  margin-left: -300px;
-}
-div.dt-buttons div.dropdown-menu.fixed.columns {
-  margin-left: -409px;
-}
-@media screen and (max-width: 1024px) {
-  div.dt-buttons div.dropdown-menu.fixed.columns {
-    margin-left: -308px;
-  }
-}
-@media screen and (max-width: 640px) {
-  div.dt-buttons div.dropdown-menu.fixed.columns {
-    margin-left: -203px;
-  }
-}
-@media screen and (max-width: 460px) {
-  div.dt-buttons div.dropdown-menu.fixed.columns {
-    margin-left: -100px;
-  }
-}
-div.dt-buttons div.dropdown-menu.fixed > :last-child {
-  max-height: 100vh;
-  overflow: auto;
-}
-div.dt-buttons div.dropdown-menu.two-column > :last-child, div.dt-buttons div.dropdown-menu.three-column > :last-child, div.dt-buttons div.dropdown-menu.four-column > :last-child {
-  display: block !important;
-  column-gap: 8px;
-}
-div.dt-buttons div.dropdown-menu.two-column > :last-child > *, div.dt-buttons div.dropdown-menu.three-column > :last-child > *, div.dt-buttons div.dropdown-menu.four-column > :last-child > * {
-  -webkit-column-break-inside: avoid;
-  break-inside: avoid;
-}
-div.dt-buttons div.dropdown-menu.two-column {
-  width: 400px;
-}
-div.dt-buttons div.dropdown-menu.two-column > :last-child {
-  padding-bottom: 1px;
-  column-count: 2;
-}
-div.dt-buttons div.dropdown-menu.three-column {
-  width: 450px;
-}
-div.dt-buttons div.dropdown-menu.three-column > :last-child {
-  padding-bottom: 1px;
-  column-count: 3;
-}
-div.dt-buttons div.dropdown-menu.four-column {
-  width: 600px;
-}
-div.dt-buttons div.dropdown-menu.four-column > :last-child {
-  padding-bottom: 1px;
-  column-count: 4;
-}
-div.dt-buttons div.dropdown-menu .dt-button {
-  border-radius: 0;
-}
-div.dt-buttons div.dropdown-menu.columns {
-  width: auto;
-}
-div.dt-buttons div.dropdown-menu.columns > :last-child {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 6px;
-  width: 818px;
-  padding-bottom: 1px;
-}
-div.dt-buttons div.dropdown-menu.columns > :last-child .dt-button {
-  min-width: 200px;
-  flex: 0 1;
-  margin: 0;
-}
-div.dt-buttons div.dropdown-menu.columns.dtb-b3 > :last-child, div.dt-buttons div.dropdown-menu.columns.dtb-b2 > :last-child, div.dt-buttons div.dropdown-menu.columns.dtb-b1 > :last-child {
-  justify-content: space-between;
-}
-div.dt-buttons div.dropdown-menu.columns.dtb-b3 .dt-button {
-  flex: 1 1 32%;
-}
-div.dt-buttons div.dropdown-menu.columns.dtb-b2 .dt-button {
-  flex: 1 1 48%;
-}
-div.dt-buttons div.dropdown-menu.columns.dtb-b1 .dt-button {
-  flex: 1 1 100%;
-}
-@media screen and (max-width: 1024px) {
-  div.dt-buttons div.dropdown-menu.columns > :last-child {
-    width: 612px;
-  }
-}
-@media screen and (max-width: 640px) {
-  div.dt-buttons div.dropdown-menu.columns > :last-child {
-    width: 406px;
-  }
-  div.dt-buttons div.dropdown-menu.columns.dtb-b3 .dt-button {
-    flex: 0 1 32%;
-  }
-}
-@media screen and (max-width: 460px) {
-  div.dt-buttons div.dropdown-menu.columns > :last-child {
-    width: 200px;
-  }
 }
 div.dt-buttons span.dt-button-spacer.empty {
   margin: 1px;
@@ -900,6 +877,166 @@ div.dt-buttons .btn.processing:after {
   -moz-animation: dtb-spinner 1500ms infinite linear;
 }
 
+div.dropdown-menu.dt-button-collection {
+  margin-top: 4px;
+  width: 200px;
+}
+div.dropdown-menu.dt-button-collection .dt-button {
+  position: relative;
+}
+div.dropdown-menu.dt-button-collection .dt-button.dropdown-toggle::after {
+  position: absolute;
+  right: 12px;
+  top: 14px;
+}
+div.dropdown-menu.dt-button-collection div.dt-button-split {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-content: flex-start;
+  align-items: stretch;
+}
+div.dropdown-menu.dt-button-collection div.dt-button-split a:first-child {
+  min-width: auto;
+  flex: 1 0 50px;
+  padding-right: 0;
+}
+div.dropdown-menu.dt-button-collection div.dt-button-split button:last-child {
+  min-width: 33px;
+  flex: 0;
+  background: transparent;
+  border: none;
+  line-height: 1rem;
+  color: var(--bs-dropdown-link-color);
+  padding: var(--bs-dropdown-item-padding-y) var(--bs-dropdown-item-padding-x);
+  overflow: visible;
+}
+div.dropdown-menu.dt-button-collection div.dt-button-split button:last-child:hover {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+}
+div.dropdown-menu.dt-button-collection.fixed {
+  position: fixed;
+  display: block;
+  top: 50%;
+  left: 50%;
+  margin-left: -75px;
+  border-radius: 5px;
+  background-color: white;
+  padding: 0.5em;
+}
+div.dropdown-menu.dt-button-collection.fixed.two-column {
+  margin-left: -200px;
+}
+div.dropdown-menu.dt-button-collection.fixed.three-column {
+  margin-left: -225px;
+}
+div.dropdown-menu.dt-button-collection.fixed.four-column {
+  margin-left: -300px;
+}
+div.dropdown-menu.dt-button-collection.fixed.columns {
+  margin-left: -409px;
+}
+@media screen and (max-width: 1024px) {
+  div.dropdown-menu.dt-button-collection.fixed.columns {
+    margin-left: -308px;
+  }
+}
+@media screen and (max-width: 640px) {
+  div.dropdown-menu.dt-button-collection.fixed.columns {
+    margin-left: -203px;
+  }
+}
+@media screen and (max-width: 460px) {
+  div.dropdown-menu.dt-button-collection.fixed.columns {
+    margin-left: -100px;
+  }
+}
+div.dropdown-menu.dt-button-collection.fixed > :last-child {
+  max-height: 100vh;
+  overflow: auto;
+}
+div.dropdown-menu.dt-button-collection.two-column > :last-child, div.dropdown-menu.dt-button-collection.three-column > :last-child, div.dropdown-menu.dt-button-collection.four-column > :last-child {
+  display: block !important;
+  column-gap: 8px;
+}
+div.dropdown-menu.dt-button-collection.two-column > :last-child > *, div.dropdown-menu.dt-button-collection.three-column > :last-child > *, div.dropdown-menu.dt-button-collection.four-column > :last-child > * {
+  -webkit-column-break-inside: avoid;
+  break-inside: avoid;
+}
+div.dropdown-menu.dt-button-collection.two-column {
+  width: 400px;
+}
+div.dropdown-menu.dt-button-collection.two-column > :last-child {
+  padding-bottom: 1px;
+  column-count: 2;
+}
+div.dropdown-menu.dt-button-collection.three-column {
+  width: 450px;
+}
+div.dropdown-menu.dt-button-collection.three-column > :last-child {
+  padding-bottom: 1px;
+  column-count: 3;
+}
+div.dropdown-menu.dt-button-collection.four-column {
+  width: 600px;
+}
+div.dropdown-menu.dt-button-collection.four-column > :last-child {
+  padding-bottom: 1px;
+  column-count: 4;
+}
+div.dropdown-menu.dt-button-collection .dt-button {
+  border-radius: 0;
+}
+div.dropdown-menu.dt-button-collection.columns {
+  width: auto;
+}
+div.dropdown-menu.dt-button-collection.columns > :last-child {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+  width: 818px;
+  padding-bottom: 1px;
+}
+div.dropdown-menu.dt-button-collection.columns > :last-child .dt-button {
+  min-width: 200px;
+  flex: 0 1;
+  margin: 0;
+}
+div.dropdown-menu.dt-button-collection.columns.dtb-b3 > :last-child, div.dropdown-menu.dt-button-collection.columns.dtb-b2 > :last-child, div.dropdown-menu.dt-button-collection.columns.dtb-b1 > :last-child {
+  justify-content: space-between;
+}
+div.dropdown-menu.dt-button-collection.columns.dtb-b3 .dt-button {
+  flex: 1 1 32%;
+}
+div.dropdown-menu.dt-button-collection.columns.dtb-b2 .dt-button {
+  flex: 1 1 48%;
+}
+div.dropdown-menu.dt-button-collection.columns.dtb-b1 .dt-button {
+  flex: 1 1 100%;
+}
+@media screen and (max-width: 1024px) {
+  div.dropdown-menu.dt-button-collection.columns > :last-child {
+    width: 612px;
+  }
+}
+@media screen and (max-width: 640px) {
+  div.dropdown-menu.dt-button-collection.columns > :last-child {
+    width: 406px;
+  }
+  div.dropdown-menu.dt-button-collection.columns.dtb-b3 .dt-button {
+    flex: 0 1 32%;
+  }
+}
+@media screen and (max-width: 460px) {
+  div.dropdown-menu.dt-button-collection.columns > :last-child {
+    width: 200px;
+  }
+}
+
 div.dt-button-background {
   position: fixed;
   top: 0;
@@ -920,10 +1057,14 @@ div.dt-button-background {
     float: none;
   }
 }
+div.dt-button-info {
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+}
+
 :root[data-bs-theme=dark] div.dropdown-menu.dt-button-collection.fixed {
-  background-color: rgb(33, 37, 41);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color-translucent);
 }
 
 
@@ -1414,6 +1555,57 @@ div.dt-scroll-footInner table.table-bordered tr th:first-child {
 }
 
 
+table.dataTable.fixedHeader-floating,
+table.dataTable.fixedHeader-locked {
+  position: relative !important;
+  background-color: var(--bs-body-bg);
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+div.dtfh-floatingparent-foot table {
+  border-top-color: var(--bs-border-color);
+  border-top-width: var(--bs-border-width);
+  border-top-style: solid;
+}
+
+@media print {
+  table.fixedHeader-floating {
+    display: none;
+  }
+}
+
+
+table.dataTable tbody th.focus,
+table.dataTable tbody td.focus {
+  outline: 2px solid #0d6efd;
+  outline-offset: -2px;
+}
+table.dataTable tbody tr.selected th.focus,
+table.dataTable tbody tr.selected td.focus {
+  outline-color: #0143a3;
+}
+
+div.dtk-focus-alt table.dataTable tbody th.focus,
+div.dtk-focus-alt table.dataTable tbody td.focus {
+  outline: 2px solid #ff8b33;
+  outline-offset: -2px;
+}
+
+html.dark table.dataTable tbody th.focus,
+html.dark table.dataTable tbody td.focus {
+  outline-color: rgb(13, 110, 253);
+}
+html.dark table.dataTable tbody tr.selected th.focus,
+html.dark table.dataTable tbody tr.selected td.focus {
+  outline-color: #0143a3;
+}
+html.dark div.dtk-focus-alt table.dataTable tbody th.focus,
+html.dark div.dtk-focus-alt table.dataTable tbody td.focus {
+  outline-color: #ff8b33;
+}
+
+
 table.dataTable.dtr-inline.collapsed > tbody > tr > td.child,
 table.dataTable.dtr-inline.collapsed > tbody > tr > th.child,
 table.dataTable.dtr-inline.collapsed > tbody > tr > td.dataTables_empty {
@@ -1690,6 +1882,53 @@ table.dataTable.table-striped tr.dtrg-level-3 th,
 table.dataTable.table-striped tr.dtrg-level-4 th,
 table.dataTable.table-striped tr.dtrg-level-5 th {
   background-color: transparent;
+}
+
+
+div.dt-rowReorder-float-parent {
+  table-layout: fixed;
+  outline: 2px solid #0d6efd;
+  z-index: 2001;
+  position: absolute !important;
+  overflow: hidden;
+  border-radius: 3px;
+}
+div.dt-rowReorder-float-parent table.dt-rowReorder-float {
+  opacity: 0.9;
+  background-color: white;
+  margin: 0 !important;
+}
+
+div.dt-rowReorder-float-parent.drop-not-allowed {
+  cursor: not-allowed;
+}
+
+tr.dt-rowReorder-moving {
+  outline: 2px solid #888;
+  outline-offset: -2px;
+}
+
+body.dt-rowReorder-noOverflow {
+  overflow-x: hidden;
+}
+
+table.dataTable td.reorder {
+  text-align: center;
+  cursor: move;
+}
+
+html.dark div.dt-rowReorder-float-parent {
+  outline-color: rgb(110, 168, 254);
+}
+html.dark div.dt-rowReorder-float-parent table.dt-rowReorder-float {
+  background-color: var(--dt-html-background);
+}
+html.dark tr.dt-rowReorder-moving {
+  outline-color: #aaa;
+}
+
+html[data-bs-theme=dark] div.dt-rowReorder-float-parent {
+  outline-color: rgb(13, 110, 253);
 }
 
 
@@ -2443,6 +2682,108 @@ html[data-bs-theme=dark] div.dtsp-panesContainer div.dtsp-searchPane div.dataTab
 html[data-bs-theme=dark] div.dtsp-panesContainer div.dtsp-searchPane div.dataTables_wrapper div.dataTables_scrollBody div.dtsp-nameCont span.dtsp-pill {
   background-color: rgb(33, 37, 41);
   color: inherit;
+}
+
+
+table.dataTable > tbody > tr > .selected {
+  background-color: rgb(13, 110, 253);
+  color: white;
+}
+table.dataTable > tbody > tr > .dt-select {
+  text-align: center;
+  vertical-align: middle;
+}
+table.dataTable > thead > tr > .dt-select {
+  text-align: center;
+}
+table.dataTable input.dt-select-checkbox {
+  appearance: none;
+  position: relative;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-top: 1px;
+  color: inherit;
+  font-size: 20px;
+  line-height: 1em;
+}
+table.dataTable input.dt-select-checkbox:checked:after {
+  display: block;
+  content: "✓";
+  margin-top: -8px;
+}
+table.dataTable input.dt-select-checkbox:indeterminate:after {
+  display: block;
+  position: absolute;
+  content: " ";
+  top: 3px;
+  left: 3px;
+  height: 4px;
+  width: 4px;
+  background-color: black;
+  border-radius: 2px;
+}
+table.dataTable > tbody > tr.selected input.dt-select-checkbox:checked {
+  border: 1px solid;
+}
+table.dataTable > tbody > tr > td.select-checkbox,
+table.dataTable > tbody > tr > th.select-checkbox {
+  position: relative;
+}
+table.dataTable > tbody > tr > td.select-checkbox:before,
+table.dataTable > tbody > tr > th.select-checkbox:before {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  content: " ";
+  margin-top: -6px;
+  margin-left: -6px;
+  border: 1px solid;
+  border-radius: 3px;
+}
+table.dataTable > tbody > tr.selected > td.select-checkbox:before,
+table.dataTable > tbody > tr.selected > th.select-checkbox:before {
+  border: 1px solid;
+  content: "✓";
+  font-size: 20px;
+  line-height: 4px;
+  text-align: center;
+}
+table.dataTable.compact > tbody > tr > td.select-checkbox:before,
+table.dataTable.compact > tbody > tr > th.select-checkbox:before {
+  margin-top: -12px;
+}
+table.dataTable.compact > tbody > tr.selected > td.select-checkbox:after,
+table.dataTable.compact > tbody > tr.selected > th.select-checkbox:after {
+  margin-top: -16px;
+}
+
+div.dt-container span.select-info,
+div.dt-container span.select-item {
+  margin-left: 0.5em;
+}
+
+html.dark table.dataTable input.dt-select-checkbox:indeterminate:after,
+html[data-bs-theme=dark] table.dataTable input.dt-select-checkbox:indeterminate:after {
+  background-color: white;
+}
+
+@media screen and (max-width: 640px) {
+  div.dt-container span.select-info,
+  div.dt-container span.select-item {
+    margin-left: 0;
+    display: block;
+  }
+}
+table.dataTable.table-sm tbody td.select-checkbox::before {
+  margin-top: -9px;
 }
 
 
