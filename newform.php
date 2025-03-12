@@ -37,64 +37,91 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $REJECTS = $_POST['REJECT'] ?? [];
 
     // Validate if required fields have data
-    if (empty($CATEGORIES)) {
+    if (empty($CATEGORIES) || empty($DATES)) {
         die("Error: Missing required data.");
     }
 
-    // Database Insertion Loop for Multiple Records
-    foreach ($CATEGORIES as $index => $CATEGORY) {
-        $MONTH_VAL = $MONTH[$index] ?? '';
-        $DATE = $DATES[$index] ?? date('Y-m-d');
-        $TRIGGER = $TRIGGERS[$index] ?? '';
-        $NT_NF = $NT_NFS[$index] ?? '';
-        $ISSUE = $ISSUES[$index] ?? '';
-        $PART_NO = $PART_NOS[$index] ?? '';
-        $PRODUCT = $PRODUCTS[$index] ?? '';
-        $LOT_SUBLOT = $LOT_SUBLOTS[$index] ?? '';
-        $IN = $INS[$index] ?? 0;
-        $OUT = $OUTS[$index] ?? 0;
-        $REJECT = $REJECTS[$index] ?? 0;
+    // Start transaction to ensure atomic operations
+    mysqli_begin_transaction($conn);
 
+    try {
+        foreach ($CATEGORIES as $index => $CATEGORY) {
+            $MONTH_VAL = $MONTH[$index] ?? '';
+            $DATE = $DATES[$index] ?? date('Y-m-d');
+            $TRIGGER = $TRIGGERS[$index] ?? '';
+            $NT_NF = $NT_NFS[$index] ?? '';
+            $ISSUE = $ISSUES[$index] ?? '';
+            $PART_NO = $PART_NOS[$index] ?? '';
+            $PRODUCT = $PRODUCTS[$index] ?? '';
+            $LOT_SUBLOT = $LOT_SUBLOTS[$index] ?? '';
+            $IN = $INS[$index] ?? 0;
+            $OUT = $OUTS[$index] ?? 0;
+            $REJECT = $REJECTS[$index] ?? 0;
 
-        // Use MySQL Syntax with backticks for reserved words
-        $sql = "INSERT INTO FPC (FY, MONTH, DATE, CATEGORY, `TRIGGER`, NT_NF, ISSUE, PART_NO, PRODUCT, LOT_SUBLOT, IN_VALUE, OUT_VALUE, REJECT) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            // Ensure part number and product name are not empty before inserting
+            if (!empty($PART_NO) && !empty($PRODUCT)) {
+                // Check if PARTNUMBER already exists
+                $query = "SELECT PARTNUMBER FROM PRODUCT_LIST WHERE PARTNUMBER = ?";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param("s", $PART_NO);
+                $stmt->execute();
+                $stmt->store_result();
 
-        $stmt = mysqli_prepare($conn, $sql);
-        if (!$stmt) {
-            die("MySQL prepare failed: " . mysqli_error($conn));
+                if ($stmt->num_rows == 0) {
+                    // PARTNUMBER does not exist, insert new record
+                    $insertQuery = "INSERT INTO PRODUCT_LIST (PARTNUMBER, PARTNAME) VALUES (?, ?)";
+                    $insertStmt = $conn->prepare($insertQuery);
+                    $insertStmt->bind_param("ss", $PART_NO, $PRODUCT);
+                    $insertStmt->execute();
+                    $insertStmt->close();
+                }
+
+                $stmt->close();
+            }
+
+            // Insert into FPC table
+            $sql = "INSERT INTO FPC (FY, MONTH, DATE, CATEGORY, `TRIGGER`, NT_NF, ISSUE, PART_NO, PRODUCT, LOT_SUBLOT, IN_VALUE, OUT_VALUE, REJECT) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("MySQL prepare failed: " . $conn->error);
+            }
+
+            $stmt->bind_param(
+                "ssssssssssiii",
+                $FY,
+                $MONTH_VAL,
+                $DATE,
+                $CATEGORY,
+                $TRIGGER,
+                $NT_NF,
+                $ISSUE,
+                $PART_NO,
+                $PRODUCT,
+                $LOT_SUBLOT,
+                $IN,
+                $OUT,
+                $REJECT
+            );
+
+            if (!$stmt->execute()) {
+                throw new Exception("Error inserting record: " . $stmt->error);
+            }
+
+            $stmt->close();
         }
 
-        mysqli_stmt_bind_param(
-            $stmt,
-            "ssssssssssiii",
-            $FY,
-            $MONTH_VAL,
-            $DATE,
-            $CATEGORY,
-            $TRIGGER,
-            $NT_NF,
-            $ISSUE,
-            $PART_NO,
-            $PRODUCT,
-            $LOT_SUBLOT,
-            $IN,
-            $OUT,
-            $REJECT
-        );
+        // Commit transaction if everything is successful
+        mysqli_commit($conn);
 
-        $result = mysqli_stmt_execute($stmt);
-
-        if (!$result) {
-            die("Error inserting record into MySQL: " . mysqli_error($conn));
-        }
-
-        mysqli_stmt_close($stmt);
+        // Redirect after success
+        header("Location: indexnew.php");
+        exit();
+    } catch (Exception $e) {
+        mysqli_rollback($conn); // Rollback in case of error
+        die("Transaction failed: " . $e->getMessage());
     }
-
-    // Redirect after success
-    header("Location: indexnew.php");
-    exit();
 }
 ?>
 <!DOCTYPE html>
@@ -454,17 +481,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <div class="form-floating">
-                                                <select class="form-select" id="MONTH" name="MONTH[]" required>
+                                                <select class="form-select month-input" name="MONTH[]" required>
                                                     <option value="">Select Month</option>
                                                     <?php foreach ($selectmonths as $month) echo "<option value='$month'>$month</option>"; ?>
                                                 </select>
-                                                <label for="MONTH" class="form-label">Month</label>
+                                                <label class="form-label">Month</label>
                                             </div>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="DATE" name="DATE[]" value="<?php echo date('Y-m-d'); ?>" readonly>
-                                                <label for="DATE" class="form-label">Date</label>
+                                                <input type="text" class="form-control date-input" name="DATE[]" value="<?php echo date('Y-m-d'); ?>" readonly>
+                                                <label class="form-label">Date</label>
                                             </div>
                                         </div>
                                     </div>
@@ -472,78 +499,80 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Category</label>
                                             <div class="input-group">
-                                                <input type="text" id="comboInput" class="form-control" name="CATEGORY[]" placeholder="Type at least 2 letters..." required>
-                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownButton"></button>
+                                                <input type="text" class="form-control category-input" name="CATEGORY[]" placeholder="Type at least 2 letters..." required>
+                                                <button class="btn btn-secondary dropdown-toggle dropdown-category" type="button"></button>
                                             </div>
-                                            <div id="suggestionBox" class="suggestions"></div>
+                                            <div class="suggestions category-suggestions"></div>
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Trigger</label>
                                             <div class="input-group">
-                                                <input type="text" id="triggers_input" class="form-control" name="TRIGGER[]" placeholder="Type Trigger..." required>
-                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdown_trigger"></button>
+                                                <input type="text" class="form-control trigger-input" name="TRIGGER[]" placeholder="Type Trigger..." required>
+                                                <button class="btn btn-secondary dropdown-toggle dropdown-trigger" type="button"></button>
                                             </div>
-                                            <div id="trigger_suggestions" class="suggestions"></div>
+                                            <div class="suggestions trigger-suggestions"></div>
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Issue</label>
                                             <div class="input-group">
-                                                <input type="text" id="issues_input" class="form-control" name="ISSUE[]" placeholder="Type Issue..." required>
-                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdown_issues"></button>
+                                                <input type="text" class="form-control issue-input" name="ISSUE[]" placeholder="Type Issue..." required>
+                                                <button class="btn btn-secondary dropdown-toggle dropdown-issues" type="button"></button>
                                             </div>
-                                            <div id="issues_suggestions" class="suggestions"></div>
+                                            <div class="suggestions issue-suggestions"></div>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Part No</label>
                                             <div class="input-group">
-                                                <input type="text" id="parnum_input" class="form-control" name="PART_NO[]" placeholder="Type Part No..." required>
-                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdown_parnum"></button>
+                                                <input type="text" class="form-control partnum-input" name="PART_NO[]" placeholder="Type Part No..." required>
+                                                <button class="btn btn-secondary dropdown-toggle dropdown-partnum" type="button"></button>
                                             </div>
-                                            <div id="parnum_suggestions" class="suggestions"></div>
+                                            <div class="suggestions partnum-suggestions"></div>
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Product</label>
                                             <div class="input-group">
-                                                <input type="text" class="form-control" id="product_name" name="PRODUCT[]" placeholder="Part Name" required>
-                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdown_parname"></button>
+                                                <input type="text" class="form-control product-name-input" name="PRODUCT[]" placeholder="Type Part No..." required>
+                                                <button class="btn btn-secondary dropdown-toggle dropdown-product" type="button"></button>
                                             </div>
-                                            <div id="parname_suggestions" class="suggestions"></div>
+                                            <div class="suggestions product-suggestions"></div>
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Lot/Sublot</label>
                                             <div class="input-group">
-                                                <input type="text" class="form-control" id="LOT_SUBLOT" name="LOT_SUBLOT[]" placeholder="Lot/Sublot" required>
-                                                <button class="btn btn-secondary dropdown-toggle" type="button"></button>
+                                                <input type="text" class="form-control lot-sublot-input" name="LOT_SUBLOT[]" placeholder="Lot/Sublot" required>
+                                                <button class="btn btn-secondary dropdown-toggle dropdown-lot" type="button"></button>
                                             </div>
-                                            <div id="suggestions" class="suggestions"></div>
+                                            <div class="suggestions lot-suggestions"></div>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">IN</label>
-                                            <input type="number" class="form-control" id="IN" name="IN[]" required>
+                                            <input type="number" class="form-control in-input" name="IN[]" required>
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">OUT</label>
-                                            <input type="number" class="form-control" id="OUT" name="OUT[]" required>
+                                            <input type="number" class="form-control out-input" name="OUT[]" required>
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Reject</label>
-                                            <input type="number" class="form-control" id="REJECT" name="REJECT[]" required>
+                                            <input type="number" class="form-control reject-input" name="REJECT[]" required>
                                         </div>
                                     </div>
                                     <button type="button" class="btn btn-danger btn-sm remove-record">Remove</button>
                                     <hr>
                                 </div>
                             </div>
+
                             <div class="d-grid gap-2" style="max-width: 60%; margin: 0 auto;">
                                 <button type="button" class="btn btn-info" id="addMore">Add More</button>
                                 <button type="submit" class="btn btn-success">Submit</button>
                                 <a href="index.php" class="btn btn-danger" role="button">Cancel</a>
                             </div>
                         </form>
+
                     </div>
                 </div>
             </div>
@@ -599,6 +628,258 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         });
     </script>
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            class SuggestionDropdown {
+                constructor(input, dropdownButton, suggestionBox, fetchUrl) {
+                    this.input = input;
+                    this.dropdownButton = dropdownButton;
+                    this.suggestionBox = suggestionBox;
+                    this.fetchUrl = fetchUrl;
+                    this.suggestions = [];
+                    this.activeIndex = -1;
+                    this.isDropdownOpen = false;
+
+                    this.init();
+                }
+
+                async fetchSuggestions() {
+                    try {
+                        const response = await fetch(this.fetchUrl);
+                        this.suggestions = await response.json();
+                    } catch (error) {
+                        console.error("Error fetching suggestions:", error);
+                    }
+                }
+
+                handleSelection(item) {
+                    this.input.value = item.textContent;
+                    this.suggestionBox.style.display = "none";
+                    this.isDropdownOpen = false;
+
+                    // If extended by PartNumberDropdown, fetch additional data
+                    if (this.fetchPartName) {
+                        this.fetchPartName(item.textContent);
+                    }
+                }
+
+                showSuggestions(filteredList) {
+                    this.suggestionBox.innerHTML = "";
+                    if (filteredList.length > 0) {
+                        this.suggestionBox.style.display = "block";
+                        filteredList.forEach((item, index) => {
+                            let div = document.createElement("div");
+                            div.classList.add("suggestion-item");
+                            div.textContent = item;
+                            div.setAttribute("data-index", index);
+                            // Handle click selection
+                            div.addEventListener("click", () => this.handleSelection(div));
+                            this.suggestionBox.appendChild(div);
+                        });
+                    } else {
+                        this.suggestionBox.style.display = "none";
+                    }
+                }
+
+                updateActiveItem() {
+                    let items = this.suggestionBox.querySelectorAll(".suggestion-item");
+
+                    // Remove 'active' class from all items
+                    items.forEach(item => item.classList.remove("active"));
+
+                    if (this.activeIndex >= 0 && this.activeIndex < items.length) {
+                        let activeItem = items[this.activeIndex];
+                        activeItem.classList.add("active");
+
+                        // Ensure the active item is visible
+                        activeItem.scrollIntoView({
+                            block: "nearest",
+                            behavior: "smooth"
+                        });
+
+                        // Update input value with selected suggestion
+                        //this.input.value = activeItem.textContent;
+                    }
+                }
+
+
+                addEventListeners() {
+                    this.input.addEventListener("keydown", (event) => {
+                        let items = this.suggestionBox.querySelectorAll(".suggestion-item");
+
+                        if (event.key === "ArrowDown" && items.length > 0) {
+                            event.preventDefault();
+                            this.activeIndex = Math.min(this.activeIndex + 1, items.length - 1); // Stop at last item
+                            this.updateActiveItem();
+                        } else if (event.key === "ArrowUp" && items.length > 0) {
+                            event.preventDefault();
+                            this.activeIndex = Math.max(this.activeIndex - 1, 0); // Stop at first item
+                            this.updateActiveItem();
+                        } else if (event.key === "Enter") {
+                            event.preventDefault();
+
+                            if (this.activeIndex >= 0) {
+                                // Select the highlighted suggestion
+                                this.handleSelection(items[this.activeIndex]);
+                            } else {
+                                // Move to the next input if no selection
+                                let formElements = Array.from(document.querySelectorAll("input, select, textarea"));
+                                let currentIndex = formElements.indexOf(this.input);
+
+                                if (currentIndex >= 0 && currentIndex < formElements.length - 1) {
+                                    formElements[currentIndex + 1].focus();
+                                }
+                            }
+                        }
+                    });
+
+                    this.input.addEventListener("keyup", (event) => {
+                        let filter = this.input.value.toLowerCase();
+
+                        // Only reset activeIndex when typing letters/numbers
+                        if (!["ArrowUp", "ArrowDown"].includes(event.key)) {
+                            this.activeIndex = -1;
+                        }
+
+                        if (filter.length >= 2) {
+                            let filtered = this.suggestions.filter(item => item.toLowerCase().includes(filter));
+                            this.showSuggestions(filtered);
+                        } else {
+                            this.suggestionBox.style.display = "none";
+                        }
+                    });
+
+
+
+                    this.dropdownButton.addEventListener("click", () => {
+                        if (this.isDropdownOpen) {
+                            this.suggestionBox.style.display = "none";
+                            this.isDropdownOpen = false;
+                        } else {
+                            this.activeIndex = -1;
+                            this.showSuggestions(this.suggestions);
+                            this.isDropdownOpen = true;
+                        }
+                    });
+
+                    document.addEventListener("click", (e) => {
+                        if (!this.input.contains(e.target) && !this.suggestionBox.contains(e.target) && !this.dropdownButton.contains(e.target)) {
+                            this.suggestionBox.style.display = "none";
+                            this.isDropdownOpen = false;
+                        }
+                    });
+                }
+
+                async init() {
+                    await this.fetchSuggestions();
+                    this.addEventListeners();
+                }
+            }
+
+            class PartNumberDropdown extends SuggestionDropdown {
+                constructor(input, dropdownButton, suggestionBox, fetchUrl, productNameInput, partNameFetchUrl) {
+                    super(input, dropdownButton, suggestionBox, fetchUrl);
+                    this.productNameInput = productNameInput;
+                    this.partNameFetchUrl = partNameFetchUrl;
+                }
+
+                async fetchPartName(partNumber) {
+                    try {
+                        const response = await fetch(`${this.partNameFetchUrl}?part_no=${encodeURIComponent(partNumber)}`);
+                        const data = await response.json();
+
+                        if (data.success && data.PARTNAME) {
+                            this.productNameInput.value = data.PARTNAME;
+                        } else {
+                            this.productNameInput.value = "Not found";
+                        }
+                    } catch (error) {
+                        console.error("Error fetching part name:", error);
+                    }
+                }
+
+                showSuggestions(filteredList) {
+                    this.suggestionBox.innerHTML = "";
+                    if (filteredList.length > 0) {
+                        this.suggestionBox.style.display = "block";
+                        filteredList.forEach((item, index) => {
+                            let div = document.createElement("div");
+                            div.classList.add("suggestion-item");
+                            div.textContent = item;
+                            div.setAttribute("data-index", index);
+                            div.onclick = () => {
+                                this.input.value = item;
+                                this.suggestionBox.style.display = "none";
+                                this.isDropdownOpen = false;
+                                this.fetchPartName(item);
+                            };
+                            this.suggestionBox.appendChild(div);
+                        });
+                    } else {
+                        this.suggestionBox.style.display = "none";
+                    }
+                }
+            }
+
+            function initializeDropdowns(container) {
+                new SuggestionDropdown(
+                    container.querySelector(".category-input"),
+                    container.querySelector(".dropdown-category"),
+                    container.querySelector(".category-suggestions"),
+                    "fetch_suggestions.php"
+                );
+                new SuggestionDropdown(
+                    container.querySelector(".trigger-input"),
+                    container.querySelector(".dropdown-trigger"),
+                    container.querySelector(".trigger-suggestions"),
+                    "fetch_triggers.php"
+                );
+                new SuggestionDropdown(
+                    container.querySelector(".issue-input"),
+                    container.querySelector(".dropdown-issues"),
+                    container.querySelector(".issue-suggestions"),
+                    "fetch_issues.php"
+                );
+
+                new PartNumberDropdown(
+                    container.querySelector(".partnum-input"),
+                    container.querySelector(".dropdown-partnum"),
+                    container.querySelector(".partnum-suggestions"),
+                    "fetch_partnum.php",
+                    container.querySelector(".product-name-input"),
+                    "fetch_partname.php"
+                );
+            }
+
+            document.getElementById("addMore").addEventListener("click", function() {
+                let container = document.getElementById("recordContainer");
+                let originalEntry = container.querySelector(".record-entry"); // Get the first entry
+                let clone = originalEntry.cloneNode(true); // Clone the form
+
+                // Get the original date value
+                let originalDateValue = originalEntry.querySelector(".date-input").value;
+
+                // Reset all input fields but maintain the original date
+                clone.querySelectorAll("input").forEach(input => {
+                    if (input.classList.contains("date-input")) {
+                        input.value = originalDateValue; // Keep the original date
+                    } else {
+                        input.value = ""; // Clear other fields
+                    }
+                });
+
+                container.appendChild(clone);
+                initializeDropdowns(clone); // Reinitialize dropdowns
+
+                clone.querySelector(".remove-record").addEventListener("click", function() {
+                    clone.remove();
+                });
+            });
+
+            document.querySelectorAll(".record-entry").forEach(initializeDropdowns);
+        });
+    </script>
+
+    <!--<script>
         class SuggestionDropdown {
             constructor(inputId, dropdownButtonId, suggestionBoxId, fetchUrl) {
                 this.input = document.getElementById(inputId);
@@ -713,8 +994,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         new SuggestionDropdown("comboInput", "dropdownButton", "suggestionBox", "fetch_suggestions.php");
         new SuggestionDropdown("triggers_input", "dropdown_trigger", "trigger_suggestions", "fetch_triggers.php");
         new SuggestionDropdown("issues_input", "dropdown_issues", "issues_suggestions", "fetch_issues.php");
-        new SuggestionDropdown("parnum_input", "dropdown_parnum", "parnum_suggestions", "fetch_partnum.php");
-    </script>
+        //new SuggestionDropdown("parnum_input", "dropdown_parnum", "parnum_suggestions", "fetch_partnum.php");
+    </script>-->
     <script>
         class PartNumberDropdown extends SuggestionDropdown {
             constructor(inputId, dropdownButtonId, suggestionBoxId, fetchUrl, productNameInputId, partNameFetchUrl) {
@@ -764,7 +1045,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Initialize for part number input
         new PartNumberDropdown("parnum_input", "dropdown_parnum", "parnum_suggestions", "fetch_partnum.php", "product_name", "fetch_partname.php");
     </script>
-    <script>
+
+    <!-- ALTERNATIVE FOR POPULATING PRODUCT NAME -->
+    <!-- <script>
         document.getElementById("parnum_input").addEventListener("input", function() {
             let partNo = this.value;
 
@@ -781,7 +1064,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     .catch(error => console.error("Error fetching data:", error));
             }
         });
-    </script>
+    </script> -->
 
     <script>
         $(document).ready(function() {
@@ -792,6 +1075,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             adjustWidth();
             $(window).resize(adjustWidth);
         });
+        document.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        let activeElement = document.activeElement;
+
+        // Check if the active element is an input, select, or textarea
+        if (["INPUT", "SELECT", "TEXTAREA"].includes(activeElement.tagName)) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Find the closest form section (.record-entry) to scope the search
+            let formSection = activeElement.closest(".record-entry");
+
+            if (formSection) {
+                // Get all visible and enabled input/select/textarea elements within the same form section
+                let formElements = Array.from(formSection.querySelectorAll("input, select, textarea"))
+                    .filter(el => el.offsetParent !== null && !el.disabled); // Only focusable elements
+
+                let currentIndex = formElements.indexOf(activeElement);
+
+                if (currentIndex >= 0 && currentIndex < formElements.length - 1) {
+                    formElements[currentIndex + 1].focus(); // Move to the correct next input field
+                }
+            }
+        }
+    }
+});
+
     </script>
 </body>
 
