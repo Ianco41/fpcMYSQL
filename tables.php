@@ -1,10 +1,55 @@
+<?php
+include "conn.php";
+
+// Set pagination limit (adjust as needed)
+$limit = 50;
+
+// Define tables with columns
+$tables = [
+    "category_tbl" => ["ID", "NAME"],
+    "trigger_tbl" => ["ID", "NAME"],
+    "issue_tbl" => ["ID", "NAME"],
+    "product_list" => ["ID", "PARTNUMBER", "PARTNAME"]
+];
+
+// Fetch data for each table
+$data = [];
+$total_pages = [];
+
+foreach ($tables as $table => $columns) {
+    // Get current page number for each table
+    $page = isset($_GET[$table . '_page']) ? (int) $_GET[$table . '_page'] : 1;
+    $offset = ($page - 1) * $limit;
+
+    // Fetch paginated data
+    $query = "SELECT * FROM $table LIMIT $limit OFFSET $offset";
+    $result = mysqli_query($conn, $query);
+
+    if (!$result) {
+        die("Query failed for $table: " . mysqli_error($conn));
+    }
+
+    // Store data
+    $data[$table] = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+    // Get total row count for pagination
+    $count_query = "SELECT COUNT(*) as total FROM $table";
+    $count_result = mysqli_query($conn, $count_query);
+    $total_rows = mysqli_fetch_assoc($count_result)['total'];
+    $total_pages[$table] = ceil($total_rows / $limit);
+}
+
+// Close connection
+mysqli_close($conn);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>format</title>
+    <title>Tables</title>
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/all.min.css">
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/fontawesome.min.css">
@@ -187,25 +232,13 @@
                         <span>FPC ADDING</span>
                     </a>
                 </li>
-                <li class="sidebar-item">
+                <li class="sidebar-item active">
                     <a href="tables.php" class="sidebar-link">
                         <i class="fa-regular fa-address-card"></i>
                         <span>Tables</span>
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                        <i class="fa-solid fa-helmet-safety"></i>
-                        <span>Product Key</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                        <i class="fa-solid fa-paperclip"></i>
-                        <span>Engineer List</span>
-                    </a>
-                </li>
-                <li class="sidebar-item active">
                     <a href="#" class="sidebar-link">
                         <i class="fa-solid fa-gear"></i>
                         <span>Setting</span>
@@ -306,28 +339,55 @@
                     </a>
                 </div>
             </div>
-            <div class="card">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h5 class="mb-3">NCPR Table</h5>
-                    </div>
-                    <div class="table-container table-responsive mt-3">
-                        <table id="ncprTable" class="table table-bordered table-hover" style="width:100%">
-                            <thead class="table-secondary">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Status</th>
-                                    <th>Created At</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <!-- Table Row -->
+            <div class="container mt-4">
+                <div class="row">
+                    <?php foreach ($tables as $table => $columns) : ?>
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3"><?php echo strtoupper(str_replace("_tbl", " ", $table)); ?> Table</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover">
+                                            <thead class="table-secondary">
+                                                <tr>
+                                                    <?php foreach ($columns as $column) : ?>
+                                                        <th><?php echo htmlspecialchars($column); ?></th>
+                                                    <?php endforeach; ?>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php if (!empty($data[$table])) : ?>
+                                                    <?php foreach ($data[$table] as $row) : ?>
+                                                        <tr>
+                                                            <?php foreach ($columns as $column) : ?>
+                                                                <td><?php echo htmlspecialchars($row[$column] ?? ''); ?></td>
+                                                            <?php endforeach; ?>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                <?php else : ?>
+                                                    <tr>
+                                                        <td colspan="<?php echo count($columns); ?>" class="text-center">No Data Found</td>
+                                                    </tr>
+                                                <?php endif; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Pagination -->
+                                    <nav>
+                                        <ul class="pagination">
+                                            <?php for ($i = 1; $i <= $total_pages[$table]; $i++) : ?>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?<?php echo $table . '_page=' . $i; ?>"><?php echo $i; ?></a>
+                                                </li>
+                                            <?php endfor; ?>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
