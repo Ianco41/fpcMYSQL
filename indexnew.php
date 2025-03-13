@@ -227,6 +227,20 @@ if ($db_type == "access") {
             overflow: auto;
             /* Prevent content overflow */
         }
+
+        .search-row th {
+            text-align: center;
+            background: #f8f9fa;
+            padding: 5px;
+        }
+
+        .column-search {
+            width: 100%;
+            padding: 4px;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
     </style>
     <style>
 
@@ -292,25 +306,67 @@ if ($db_type == "access") {
                                 <div class="col-auto">
                                     <select name="year" id="year" class="form-select">
                                         <?php
-                                        // Display the last 10 years as options (from 2025 to 2015)
-                                        for ($i = 2025; $i >= 2015; $i--) {
-                                            echo "<option value='$i' " . ($i == $year ? 'selected' : '') . ">$i</option>";
+                                        // Assuming you already have a database connection established in $conn
+                                        $query = "SELECT DISTINCT YEAR(DATE) AS year FROM fpc ORDER BY year DESC";
+                                        $result = mysqli_query($conn, $query);
+
+                                        if ($result) {
+                                            while ($row = mysqli_fetch_assoc($result)) {
+                                                $year = $row['year'];
+                                                echo "<option value='$year' " . ($year == $selectedYear ? 'selected' : '') . ">$year</option>";
+                                            }
+                                        } else {
+                                            echo "<option disabled>No years available</option>";
                                         }
                                         ?>
                                     </select>
                                 </div>
+
                             </form>
+                            <?php
+                            $columns = [
+                                'ID',
+                                'FY',
+                                'MONTH',
+                                'DATE',
+                                'CATEGORY',
+                                'TRIGGER',
+                                'NT_NF',
+                                'ISSUE',
+                                'PARTNUMBER',
+                                'PRODUCT',
+                                'LOT_SUBLOT',
+                                'QTY-IN',
+                                'QTY-OUT',
+                                'REJECT'
+                            ];
+                            ?>
+
                             <div class="dropdown">
-                                <button class="btn btn-primary dropdown-toggle" type="button" id="toggleDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Show/Hide Columns
+                                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Hide Columns
                                 </button>
-                                <ul class="dropdown-menu" aria-labelledby="toggleDropdown" id="toggleButtons">
-                                    <!-- Dynamic toggle buttons will be added here -->
+                                <ul class="dropdown-menu" style="max-height: 300px; overflow-y: auto;">
+                                    <?php foreach ($columns as $index => $column): ?>
+                                        <li><a class="dropdown-item toggle-vis" data-column="<?php echo $index; ?>"><?php echo htmlspecialchars($column); ?></a></li>
+                                    <?php endforeach; ?>
                                 </ul>
                             </div>
                         </div>
-
                         <style>
+                            .highlight-hidden {
+                                background-color: #f8d7da;
+                                /* Light red background for hidden columns */
+                                color: #721c24;
+                                /* Dark red text color */
+                                font-weight: bold;
+                                /* Optional: To make it stand out more */
+                            }
+
+                            .dropdown-menu .dropdown-item {
+                                cursor: default;
+                            }
+
                             th {
                                 font-size: 12px;
                             }
@@ -319,12 +375,6 @@ if ($db_type == "access") {
                                 font-size: 10px;
                             }
                         </style>
-                        <div class="d-flex mb-3">
-                            <select id="columnFilter" class="form-select me-2">
-                                <option value="all">All Columns</option>
-                            </select>
-                            <input type="text" id="globalSearch" class="form-control" placeholder="Search...">
-                        </div>
                         <table id="myTable" class="table table-striped table-bordered table-hover" style="width:100%">
                             <thead class="table-primary text-center">
                                 <tr>
@@ -504,52 +554,64 @@ if ($db_type == "access") {
                     bottomStart: null,
                     bottomEnd: null
                 },
-            });
+                initComplete: function() {
+                    let api = this.api();
+                    let $thead = $('#myTable thead');
 
-            var $thead = $('#myTable thead tr');
-            var columnsToToggle = [];
-            var hiddenColumns = []; // Columns to be hidden initially
-            var $columnDropdown = $('#columnFilter'); // Dropdown selector for column filtering
+                    // Add a new row for search inputs
+                    let $searchRow = $('<tr>').addClass('search-row');
 
-            // Extract column names dynamically and add them to the dropdown
-            $thead.find('th').each(function(index) {
-                if (index !== 0) { // Skip ID column
-                    var colName = $(this).text().trim();
-                    var isHidden = hiddenColumns.includes(colName);
+                    api.columns().every(function(index) {
+                        let column = this;
+                        let title = $(column.header()).text().trim();
 
-                    columnsToToggle.push({
-                        index: index,
-                        name: colName,
-                        hidden: isHidden
+                        // Create input element
+                        let input = $('<input>')
+                            .attr('type', 'text')
+                            .attr('placeholder', `Search ${title}`)
+                            .addClass('column-search');
+
+                        // Append input to new search row
+                        let th = $('<th>').append(input);
+                        $searchRow.append(th);
+
+                        // Event listener for column search
+                        input.on('keyup', function() {
+                            column.search($(this).val()).draw();
+                        });
                     });
 
-                    // Hide the column initially if it's in the hiddenColumns list
-                    if (isHidden) {
-                        table.column(index).visible(false);
-                    }
-
-                    // Add column options to the dropdown
-                    $columnDropdown.append(`<option value="${index}">${colName}</option>`);
+                    // Insert search row inside the table head
+                    $thead.prepend($searchRow);
                 }
             });
 
-            // Toggle column visibility on checkbox change
-            $(document).on('change', '.toggle-column', function() {
-                var columnIdx = $(this).data('column');
-                var column = table.column(columnIdx);
-                column.visible(!column.visible());
+            document.querySelectorAll('a.toggle-vis').forEach((el) => {
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    let columnIdx = parseInt(e.target.getAttribute('data-column'));
+                    let column = table.column(columnIdx);
+                    let isVisible = !column.visible();
+                    column.visible(isVisible);
+
+                    // Hide/show the search input in the search row
+                    let searchRowTh = document.querySelector(`.search-row th:nth-child(${columnIdx + 1})`);
+                    if (searchRowTh) {
+                        searchRowTh.style.display = isVisible ? '' : 'none';
+                    }
+                });
             });
+            // Update the dropdown to highlight hidden columns
+            table.on('column-visibility', function(e, settings, column, state) {
+                var columnIndex = column;
+                var dropdownItem = $('.dropdown-item[data-column="' + columnIndex + '"]');
 
-            // Global search bar with column-specific filtering
-            $('#globalSearch').on('keyup', function() {
-                var searchTerm = this.value;
-                var selectedColumn = $('#columnFilter').val(); // Get selected column index
-
-                if (selectedColumn === "all") {
-                    table.search(searchTerm).draw(); // Search all columns
+                // If the column is hidden, add a class to the corresponding dropdown item
+                if (!state) {
+                    dropdownItem.addClass('highlight-hidden');
                 } else {
-                    table.columns().search(""); // Clear previous search
-                    table.column(selectedColumn).search(searchTerm).draw(); // Search only in the selected column
+                    dropdownItem.removeClass('highlight-hidden');
                 }
             });
         });
