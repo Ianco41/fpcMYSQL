@@ -155,10 +155,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Commit transaction if everything is successful
         mysqli_commit($conn);
-
-        // Redirect after success
-        header("Location: indexnew.php");
-        exit();
     } catch (Exception $e) {
         mysqli_rollback($conn); // Rollback in case of error
         die("Transaction failed: " . $e->getMessage());
@@ -416,92 +412,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </aside>
         <div class="main p-3">
-            <div class="row">
-                <div class="col-md-6 col-lg-3">
-                    <a href="ncprlist.php" class="text-decoration-none">
-                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
-                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
-                                <div class="card-body p-0 d-flex flex-fill">
-                                    <div class="row g-5 align-items-center">
-                                        <div class="col-6">
-                                            <div class="p-3 m-1">
-                                                <h5>NCPR Files</h5>
-                                                <p class="mb-0">#</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 d-flex justify-content-end">
-                                            <img src="asset/folder.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <a href="ncprlist.php" class="text-decoration-none">
-                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
-                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
-                                <div class="card-body p-0 d-flex flex-fill">
-                                    <div class="row g-5 align-items-center">
-                                        <div class="col-6">
-                                            <div class="p-3 m-1">
-                                                <h5>Open Files</h5>
-                                                <p class="mb-0">#</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 d-flex justify-content-end">
-                                            <img src="asset/open.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <a href="productkey.php" class="text-decoration-none">
-                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
-                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
-                                <div class="card-body p-0 d-flex flex-fill">
-                                    <div class="row g-5 align-items-center">
-                                        <div class="col-6">
-                                            <div class="p-3 m-1">
-                                                <h5>Product Key</h5>
-                                                <p class="mb-0">#</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 d-flex justify-content-end">
-                                            <img src="asset/close.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <a href="status.php" class="text-decoration-none">
-                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
-                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
-                                <div class="card-body p-0 d-flex flex-fill">
-                                    <div class="row g-5 align-items-center">
-                                        <div class="col-6">
-                                            <div class="p-3 m-1">
-                                                <h5>Engineer List</h5>
-                                                <p class="mb-0">#</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 d-flex justify-content-end">
-                                            <img src="asset/eng.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
             <div class="card">
                 <div class="card-body">
                     <div class="card-title">
@@ -608,15 +518,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <input type="number" class="form-control reject-input" name="REJECT[]" required>
                                         </div>
                                     </div>
-                                    <div class="d-flex justify-content-end">
-                                        <button type="button" class="btn btn-danger btn-sm remove-record">Remove</button>
-                                    </div>
                                     <hr>
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-end gap-2" style=" margin: 0 auto;">
-                                <button type="button" class="btn btn-info" id="addMore">Add More</button>
+                                <!-- <button type="button" class="btn btn-info" id="addMore">Add More</button> -->
                                 <button type="submit" class="btn btn-success">Submit</button>
                                 <!-- <a href="index.php" class="btn btn-danger" role="button">Cancel</a> -->
                             </div>
@@ -781,12 +688,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             block: "nearest",
                             behavior: "smooth"
                         });
-
-                        // Update input value with selected suggestion
-                        //this.input.value = activeItem.textContent;
                     }
                 }
-
 
                 addEventListeners() {
                     this.input.addEventListener("keydown", (event) => {
@@ -834,8 +737,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         }
                     });
 
-
-
                     this.dropdownButton.addEventListener("click", () => {
                         if (this.isDropdownOpen) {
                             this.suggestionBox.style.display = "none";
@@ -875,7 +776,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         }
                     });
                 }
-
 
                 async fetchPartName(partNumber) {
                     try {
@@ -945,221 +845,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 );
             }
 
-            document.getElementById("addMore").addEventListener("click", function() {
-                let container = document.getElementById("recordContainer");
-                let originalEntry = container.querySelector(".record-entry"); // Get the first entry
-                let clone = originalEntry.cloneNode(true); // Clone the form
-
-                // Get the original date value
-                let originalDateValue = originalEntry.querySelector(".date-input").value;
-
-                // Reset all input fields but maintain the original date
-                clone.querySelectorAll("input").forEach(input => {
-                    if (input.classList.contains("date-input")) {
-                        input.value = originalDateValue; // Keep the original date
-                    } else {
-                        input.value = ""; // Clear other fields
-                    }
-                });
-
-                container.appendChild(clone);
-                initializeDropdowns(clone); // Reinitialize dropdowns
-
-                clone.querySelector(".remove-record").addEventListener("click", function() {
-                    clone.remove();
-                });
-            });
-
+            // Remove the event listener related to "add more" and cloning
+            // Initialize the existing records only
             document.querySelectorAll(".record-entry").forEach(initializeDropdowns);
         });
     </script>
-
-    <!--<script>
-        class SuggestionDropdown {
-            constructor(inputId, dropdownButtonId, suggestionBoxId, fetchUrl) {
-                this.input = document.getElementById(inputId);
-                this.dropdownButton = document.getElementById(dropdownButtonId);
-                this.suggestionBox = document.getElementById(suggestionBoxId);
-                this.fetchUrl = fetchUrl;
-                this.suggestions = [];
-                this.activeIndex = -1;
-                this.isDropdownOpen = false;
-
-                this.init();
-            }
-
-            async fetchSuggestions() {
-                try {
-                    const response = await fetch(this.fetchUrl);
-                    this.suggestions = await response.json();
-                } catch (error) {
-                    console.error("Error fetching suggestions:", error);
-                }
-            }
-
-            showSuggestions(filteredList) {
-                this.suggestionBox.innerHTML = "";
-                if (filteredList.length > 0) {
-                    this.suggestionBox.style.display = "block";
-                    filteredList.forEach((item, index) => {
-                        let div = document.createElement("div");
-                        div.classList.add("suggestion-item");
-                        div.textContent = item;
-                        div.setAttribute("data-index", index);
-                        div.onclick = () => {
-                            this.input.value = item;
-                            this.suggestionBox.style.display = "none";
-                            this.isDropdownOpen = false;
-                        };
-                        this.suggestionBox.appendChild(div);
-                    });
-                } else {
-                    this.suggestionBox.style.display = "none";
-                }
-            }
-
-            updateActiveItem(items) {
-                items.forEach(item => item.classList.remove("active"));
-                if (this.activeIndex >= 0) {
-                    items[this.activeIndex].classList.add("active");
-                    this.input.value = items[this.activeIndex].textContent;
-                }
-            }
-
-            addEventListeners() {
-                this.input.addEventListener("keydown", (event) => {
-                    let items = document.querySelectorAll(".suggestion-item");
-                    if (event.key === "ArrowDown" && items.length > 0) {
-                        event.preventDefault();
-                        this.activeIndex = (this.activeIndex + 1) % items.length;
-                        this.updateActiveItem(items);
-                    } else if (event.key === "ArrowUp" && items.length > 0) {
-                        event.preventDefault();
-                        this.activeIndex = (this.activeIndex - 1 + items.length) % items.length;
-                        this.updateActiveItem(items);
-                    } else if (event.key === "Enter") {
-                        if (this.activeIndex >= 0 && items.length > 0) {
-                            event.preventDefault();
-                            this.input.value = items[this.activeIndex].textContent;
-                            this.suggestionBox.style.display = "none";
-                            this.isDropdownOpen = false;
-                        } else {
-                            this.suggestionBox.style.display = "none";
-                        }
-                    }
-                });
-
-                this.input.addEventListener("keyup", () => {
-                    let filter = this.input.value.toLowerCase();
-                    this.activeIndex = -1;
-                    if (filter.length >= 2) {
-                        let filtered = this.suggestions.filter(item => item.toLowerCase().includes(filter));
-                        this.showSuggestions(filtered);
-                    } else {
-                        this.suggestionBox.style.display = "none";
-                    }
-                });
-
-                this.dropdownButton.addEventListener("click", () => {
-                    if (this.isDropdownOpen) {
-                        this.suggestionBox.style.display = "none";
-                        this.isDropdownOpen = false;
-                    } else {
-                        this.activeIndex = -1;
-                        this.showSuggestions(this.suggestions);
-                        this.isDropdownOpen = true;
-                    }
-                });
-
-                document.addEventListener("click", (e) => {
-                    if (!this.input.contains(e.target) && !this.suggestionBox.contains(e.target) && !this.dropdownButton.contains(e.target)) {
-                        this.suggestionBox.style.display = "none";
-                        this.isDropdownOpen = false;
-                    }
-                });
-            }
-
-            async init() {
-                await this.fetchSuggestions();
-                this.addEventListeners();
-            }
-        }
-
-        // Initialize for each input field
-        new SuggestionDropdown("comboInput", "dropdownButton", "suggestionBox", "fetch_suggestions.php");
-        new SuggestionDropdown("triggers_input", "dropdown_trigger", "trigger_suggestions", "fetch_triggers.php");
-        new SuggestionDropdown("issues_input", "dropdown_issues", "issues_suggestions", "fetch_issues.php");
-        //new SuggestionDropdown("parnum_input", "dropdown_parnum", "parnum_suggestions", "fetch_partnum.php");
-    </script>-->
-    <!--<script>
-        class PartNumberDropdown extends SuggestionDropdown {
-            constructor(inputId, dropdownButtonId, suggestionBoxId, fetchUrl, productNameInputId, partNameFetchUrl) {
-                super(inputId, dropdownButtonId, suggestionBoxId, fetchUrl);
-                this.productNameInput = document.getElementById(productNameInputId);
-                this.partNameFetchUrl = partNameFetchUrl;
-            }
-
-            async fetchPartName(partNumber) {
-                try {
-                    const response = await fetch(`${this.partNameFetchUrl}?part_no=${encodeURIComponent(partNumber)}`);
-                    const data = await response.json();
-
-                    if (data.success && data.PARTNAME) {
-                        this.productNameInput.value = data.PARTNAME; // Populate product name field
-                    } else {
-                        this.productNameInput.value = "Not found"; // Handle missing part names
-                    }
-                } catch (error) {
-                    console.error("Error fetching part name:", error);
-                }
-            }
-
-            showSuggestions(filteredList) {
-                this.suggestionBox.innerHTML = "";
-                if (filteredList.length > 0) {
-                    this.suggestionBox.style.display = "block";
-                    filteredList.forEach((item, index) => {
-                        let div = document.createElement("div");
-                        div.classList.add("suggestion-item");
-                        div.textContent = item;
-                        div.setAttribute("data-index", index);
-                        div.onclick = () => {
-                            this.input.value = item;
-                            this.suggestionBox.style.display = "none";
-                            this.isDropdownOpen = false;
-                            this.fetchPartName(item); // Fetch part name when part number is selected
-                        };
-                        this.suggestionBox.appendChild(div);
-                    });
-                } else {
-                    this.suggestionBox.style.display = "none";
-                }
-            }
-        }
-
-        // Initialize for part number input
-        new PartNumberDropdown("parnum_input", "dropdown_parnum", "parnum_suggestions", "fetch_partnum.php", "product_name", "fetch_partname.php");
-    </script>-->
-
-    <!-- ALTERNATIVE FOR POPULATING PRODUCT NAME -->
-    <!-- <script>
-        document.getElementById("parnum_input").addEventListener("input", function() {
-            let partNo = this.value;
-
-            if (partNo.length > 2) { // Start searching after 2 characters
-                fetch("fetch_partname.php?part_no=" + encodeURIComponent(partNo))
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            document.getElementById("product_name").value = data.product_name;
-                        } else {
-                            document.getElementById("product_name").value = "";
-                        }
-                    })
-                    .catch(error => console.error("Error fetching data:", error));
-            }
-        });
-    </script> -->
 
     <script>
         $(document).ready(function() {
