@@ -14,11 +14,11 @@ if ($db_type == "access") {
         }
     }
 } else {
-    $query = "SELECT DISTINCT `TRIGGER` FROM FPC";
+    $query = "SELECT DISTINCT trigger_name FROM trigger_tbl";
     $result = mysqli_query($conn, $query);
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $suggestions[] = $row['TRIGGER'];
+            $suggestions[] = $row['trigger_name'];
         }
     }
 }

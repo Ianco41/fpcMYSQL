@@ -14,11 +14,11 @@ if ($db_type == "access") {
         }
     }
 } else {
-    $query = "SELECT DISTINCT CATEGORY FROM FPC";
+    $query = "SELECT DISTINCT cat_name FROM category_tbl";
     $result = mysqli_query($conn, $query);
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $suggestions[] = $row['CATEGORY'];
+            $suggestions[] = $row['cat_name'];
         }
     }
 }

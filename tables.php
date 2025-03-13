@@ -482,14 +482,14 @@ mysqli_close($conn);
                         "data": "ID"
                     },
                     {
-                        "data": "name"
+                        "data": "cat_name"
                     }
                 ],
                 "trigger_tbl": [{
                         "data": "ID"
                     },
                     {
-                        "data": "name"
+                        "data": "trigger_name"
                     }
                 ],
                 "issue_tbl": [{

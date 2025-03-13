@@ -2,34 +2,55 @@
 include "conn.php";
 
 $year = isset($_GET['year']) ? intval($_GET['year']) : date('Y'); // Get year from filter or use current year
+$data = [];
 
 if ($db_type == "access") {
-    // Query for MS Access (using ODBC)
-    $query = "SELECT * FROM FPC WHERE YEAR(date) = $year ORDER BY ID DESC";
-    $result = odbc_exec($conn, $query);
+    // Query for MS Access (using ODBC) with JOINs for meaningful data
+    $query = "SELECT FPC.*, 
+                     PARTS.part_name, 
+                     CATEGORIES.category_name, 
+                     TRIGGERS.trigger_name 
+              FROM ((FPC 
+              LEFT JOIN PARTS ON FPC.PART_ID = PARTS.ID)
+              LEFT JOIN CATEGORIES ON FPC.CATEGORY_ID = CATEGORIES.ID)
+              LEFT JOIN TRIGGERS ON FPC.TRIGGER_ID = TRIGGERS.ID
+              WHERE DATEPART('yyyy', FPC.[date]) = $year 
+              ORDER BY FPC.ID DESC";
 
+    $result = odbc_exec($conn, $query);
     if (!$result) {
         die("Query failed: " . odbc_errormsg());
     }
 
     // Fetch data from ODBC
-    $data = [];
     while ($row = odbc_fetch_array($result)) {
         $data[] = $row;
     }
 } else {
-    // Query for MySQL
-    $query = "SELECT * FROM FPC WHERE YEAR(date) = $year ORDER BY ID DESC";
-    $result = mysqli_query($conn, $query);
+    // Query for MySQL with JOINs
+    $query = "SELECT FPC.*, 
+                     product_list.PARTNAME, PARTNUMBER, 
+                     category_tbl.cat_name, 
+                     trigger_tbl.trigger_name 
+              FROM FPC 
+              LEFT JOIN product_list ON FPC.PART_ID = product_list.ID 
+              LEFT JOIN category_tbl ON FPC.CATEGORY_ID = category_tbl.ID 
+              LEFT JOIN trigger_tbl ON FPC.TRIGGER_ID = trigger_tbl.ID 
+              WHERE YEAR(FPC.date) = $year 
+              ORDER BY FPC.ID DESC";
 
+    $result = mysqli_query($conn, $query);
     if (!$result) {
         die("Query failed: " . mysqli_error($conn));
     }
 
     // Fetch data from MySQL
-    $data = mysqli_fetch_all($result, MYSQLI_ASSOC);
+    while ($row = mysqli_fetch_assoc($result)) {
+        $data[] = $row;
+    }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -76,16 +97,23 @@ if ($db_type == "access") {
             overflow: hidden;
             transition: all 0.35s ease-in-out;
             background-color: #fafbfe;
+            margin-left: 70px;
         }
 
         #sidebar {
             width: 70px;
             min-width: 70px;
+            height: 100vh;
+            /* Full height of the viewport */
             z-index: 1000;
             transition: all .25s ease-in-out;
             background-color: #0e2238;
             display: flex;
             flex-direction: column;
+            position: fixed;
+            /* Fixes the sidebar in place */
+            top: 0;
+            left: 0;
         }
 
         #sidebar.expand {
@@ -194,11 +222,14 @@ if ($db_type == "access") {
         }
 
         .table-container {
-            height: 60vh;
+            height: 90vh;
             /* Adjust based on requirement */
             overflow: auto;
             /* Prevent content overflow */
         }
+    </style>
+    <style>
+
     </style>
 </head>
 
@@ -247,93 +278,6 @@ if ($db_type == "access") {
             </div>
         </aside>
         <div class="main p-3">
-            <div class="row">
-                <div class="col-md-6 col-lg-3">
-                    <a href="#" class="text-decoration-none">
-                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
-                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
-                                <div class="card-body p-0 d-flex flex-fill">
-                                    <div class="row g-5 align-items-center">
-                                        <div class="col-6">
-                                            <div class="p-3 m-1">
-                                                <h5>FPC </h5>
-                                                <p class="mb-0">#</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 d-flex justify-content-end">
-                                            <img src="asset/folder.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <a href="#" class="text-decoration-none">
-                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
-                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
-                                <div class="card-body p-0 d-flex flex-fill">
-                                    <div class="row g-5 align-items-center">
-                                        <div class="col-6">
-                                            <div class="p-3 m-1">
-                                                <h5>Total Ins</h5>
-                                                <p class="mb-0">#</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 d-flex justify-content-end">
-                                            <img src="asset/open.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <a href="#" class="text-decoration-none">
-                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
-                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
-                                <div class="card-body p-0 d-flex flex-fill">
-                                    <div class="row g-5 align-items-center">
-                                        <div class="col-6">
-                                            <div class="p-3 m-1">
-                                                <h5>Total Outs</h5>
-                                                <p class="mb-0">#</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 d-flex justify-content-end">
-                                            <img src="asset/close.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <a href="#" class="text-decoration-none">
-                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
-                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
-                                <div class="card-body p-0 d-flex flex-fill">
-                                    <div class="row g-5 align-items-center">
-                                        <div class="col-6">
-                                            <div class="p-3 m-1">
-                                                <h5>Total Rejects</h5>
-                                                <p class="mb-0">#</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 d-flex justify-content-end">
-                                            <img src="asset/eng.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
             <div class="card">
                 <div class="card-body">
                     <div class="card-title">
@@ -365,12 +309,21 @@ if ($db_type == "access") {
                                 </ul>
                             </div>
                         </div>
+                        <style>
+                            th {
+                                font-size: 12px;
+                            }
+
+                            td {
+                                font-size: 10px;
+                            }
+                        </style>
                         <table id="myTable" class="table table-striped table-bordered table-hover" style="width:100%">
-                            <thead>
+                            <thead class="table-primary text-center">
                                 <tr>
                                     <!-- Adjust column names based on the fields from your FPC table -->
                                     <th>ID</th>
-                                    <th>FISCAL YR</th>
+                                    <th>FY</th>
                                     <th>MONTH</th>
                                     <th>DATE</th>
                                     <th>CATEGORY</th>
@@ -389,7 +342,7 @@ if ($db_type == "access") {
                             <tbody>
                                 <?php
                                 // Array of columns you want to include in the data-* attributes
-                                $data_columns = ['ID', 'FY', 'MONTH', 'DATE', 'CATEGORY', 'TRIGGER', 'NT_NF', 'ISSUE', 'PART_NO', 'PRODUCT', 'LOT_SUBLOT', 'IN_VALUE', 'OUT_VALUE', 'REJECT'];
+                                $data_columns = ['ID', 'FY', 'MONTH', 'DATE', 'cat_name', 'trigger_name', 'NT_NF', 'ISSUE', 'PARTNUMBER', 'PRODUCT', 'LOT_SUBLOT', 'IN_VALUE', 'OUT_VALUE', 'REJECT'];
 
                                 // Loop through each row of data and create table rows
                                 foreach ($data as $row) {
@@ -543,12 +496,12 @@ if ($db_type == "access") {
                     bottom: 'paging',
                     bottomStart: null,
                     bottomEnd: null
-                }
+                },
             });
 
             var $thead = $('#myTable thead tr');
             var columnsToToggle = [];
-            var hiddenColumns = ["FISCAL YR", "MONTH", "NT/NF", "LOT/ SUBLOT"]; // Columns to be hidden initially
+            var hiddenColumns = []; // Columns to be hidden initially
 
             // Extract column names dynamically
             $thead.find('th').each(function(index) {

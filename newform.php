@@ -58,30 +58,71 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $OUT = $OUTS[$index] ?? 0;
             $REJECT = $REJECTS[$index] ?? 0;
 
-            // Ensure part number and product name are not empty before inserting
+            // Ensure part number and product exist
             if (!empty($PART_NO) && !empty($PRODUCT)) {
-                // Check if PARTNUMBER already exists
-                $query = "SELECT PARTNUMBER FROM PRODUCT_LIST WHERE PARTNUMBER = ?";
+                $query = "SELECT ID FROM PRODUCT_LIST WHERE PARTNUMBER = ?";
                 $stmt = $conn->prepare($query);
                 $stmt->bind_param("s", $PART_NO);
                 $stmt->execute();
                 $stmt->store_result();
 
                 if ($stmt->num_rows == 0) {
-                    // PARTNUMBER does not exist, insert new record
                     $insertQuery = "INSERT INTO PRODUCT_LIST (PARTNUMBER, PARTNAME) VALUES (?, ?)";
                     $insertStmt = $conn->prepare($insertQuery);
                     $insertStmt->bind_param("ss", $PART_NO, $PRODUCT);
                     $insertStmt->execute();
+                    $PART_ID = $conn->insert_id;
                     $insertStmt->close();
+                } else {
+                    $stmt->bind_result($PART_ID);
+                    $stmt->fetch();
                 }
-
                 $stmt->close();
             }
 
+            // Ensure category exists
+            $query = "SELECT ID FROM category_tbl WHERE cat_name = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("s", $CATEGORY);
+            $stmt->execute();
+            $stmt->store_result();
+
+            if ($stmt->num_rows == 0) {
+                $insertQuery = "INSERT INTO category_tbl (cat_name) VALUES (?)";
+                $insertStmt = $conn->prepare($insertQuery);
+                $insertStmt->bind_param("s", $CATEGORY);
+                $insertStmt->execute();
+                $CATEGORY_ID = $conn->insert_id;
+                $insertStmt->close();
+            } else {
+                $stmt->bind_result($CATEGORY_ID);
+                $stmt->fetch();
+            }
+            $stmt->close();
+
+            // Ensure trigger exists
+            $query = "SELECT ID FROM trigger_tbl WHERE trigger_name = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("s", $TRIGGER);
+            $stmt->execute();
+            $stmt->store_result();
+
+            if ($stmt->num_rows == 0) {
+                $insertQuery = "INSERT INTO trigger_tbl (trigger_name) VALUES (?)";
+                $insertStmt = $conn->prepare($insertQuery);
+                $insertStmt->bind_param("s", $TRIGGER);
+                $insertStmt->execute();
+                $TRIGGER_ID = $conn->insert_id;
+                $insertStmt->close();
+            } else {
+                $stmt->bind_result($TRIGGER_ID);
+                $stmt->fetch();
+            }
+            $stmt->close();
+
             // Insert into FPC table
-            $sql = "INSERT INTO FPC (FY, MONTH, DATE, CATEGORY, `TRIGGER`, NT_NF, ISSUE, PART_NO, PRODUCT, LOT_SUBLOT, IN_VALUE, OUT_VALUE, REJECT) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO FPC (FY, MONTH, DATE, CATEGORY_ID, TRIGGER_ID, NT_NF, ISSUE, PART_ID, PRODUCT, LOT_SUBLOT, IN_VALUE, OUT_VALUE, REJECT) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
@@ -93,11 +134,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $FY,
                 $MONTH_VAL,
                 $DATE,
-                $CATEGORY,
-                $TRIGGER,
+                $CATEGORY_ID,
+                $TRIGGER_ID,
                 $NT_NF,
                 $ISSUE,
-                $PART_NO,
+                $PART_ID,
                 $PRODUCT,
                 $LOT_SUBLOT,
                 $IN,
@@ -471,7 +512,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <div id="recordContainer">
                                 <div class="record-entry">
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-4 mb-3">
                                             <div class="form-floating">
                                                 <select class="form-select month-input" name="MONTH[]" required>
                                                     <option value="">Select Month</option>
@@ -480,10 +521,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                                 <label class="form-label">Month</label>
                                             </div>
                                         </div>
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-4 mb-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control date-input" name="DATE[]" value="<?php echo date('Y-m-d'); ?>" readonly>
+                                                <input type="date" class="form-control date-input" name="DATE[]" required>
                                                 <label class="form-label">Date</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="form-floating">
+                                                <select class="form-select month-input" name="NT_NF[]" required>
+                                                    <option value="">Select NT/NF</option>
+                                                    <?php foreach ($NT_NF as $NT_NF) echo "<option value='$NT_NF'>$NT_NF</option>"; ?>
+                                                </select>
+                                                <label class="form-label">NT/NF</label>
                                             </div>
                                         </div>
                                     </div>
@@ -530,7 +580,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             </div>
                                             <div class="suggestions product-suggestions"></div>
                                         </div>
-                                        <div class="col-md-4 mb-3">
+
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
                                             <label class="form-label">Lot/Sublot</label>
                                             <div class="input-group">
                                                 <input type="text" class="form-control lot-sublot-input" name="LOT_SUBLOT[]" placeholder="Lot/Sublot" required>
@@ -538,18 +591,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             </div>
                                             <div class="suggestions lot-suggestions"></div>
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">IN</label>
+                                        <div class="col-md mb-3">
+                                            <label class="form-label">Qty-In</label>
                                             <input type="number" class="form-control in-input" name="IN[]" required>
                                         </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">OUT</label>
+                                        <div class="col-md mb-3">
+                                            <label class="form-label">Qty-Out</label>
                                             <input type="number" class="form-control out-input" name="OUT[]" required>
                                         </div>
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md mb-3">
                                             <label class="form-label">Reject</label>
+                                            <input type="number" class="form-control reject-input" name="REJECT[]" required>
+                                        </div>
+                                        <div class="col-md mb-3">
+                                            <label class="form-label">Minutes.</label>
                                             <input type="number" class="form-control reject-input" name="REJECT[]" required>
                                         </div>
                                     </div>
@@ -618,6 +673,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            document.querySelectorAll(".in-input, .out-input").forEach(input => {
+                input.addEventListener("input", function() {
+                    let row = this.closest(".row"); // Get the parent row
+                    let qtyIn = parseInt(row.querySelector(".in-input").value) || 0;
+                    let qtyOutInput = row.querySelector(".out-input");
+                    let qtyOut = parseInt(qtyOutInput.value);
+                    let rejectInput = row.querySelector(".reject-input");
+
+                    // If QTY OUT has a value, calculate Reject. Otherwise, keep it empty.
+                    if (!isNaN(qtyOut)) {
+                        rejectInput.value = Math.max(qtyIn - qtyOut, 0); // Prevent negative values
+                    } else {
+                        rejectInput.value = ""; // Keep it empty
+                    }
+                });
             });
         });
     </script>
