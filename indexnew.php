@@ -2,55 +2,34 @@
 include "conn.php";
 
 $year = isset($_GET['year']) ? intval($_GET['year']) : date('Y'); // Get year from filter or use current year
-$data = [];
 
 if ($db_type == "access") {
-    // Query for MS Access (using ODBC) with JOINs for meaningful data
-    $query = "SELECT FPC.*, 
-                     PARTS.part_name, 
-                     CATEGORIES.category_name, 
-                     TRIGGERS.trigger_name 
-              FROM ((FPC 
-              LEFT JOIN PARTS ON FPC.PART_ID = PARTS.ID)
-              LEFT JOIN CATEGORIES ON FPC.CATEGORY_ID = CATEGORIES.ID)
-              LEFT JOIN TRIGGERS ON FPC.TRIGGER_ID = TRIGGERS.ID
-              WHERE DATEPART('yyyy', FPC.[date]) = $year 
-              ORDER BY FPC.ID DESC";
-
+    // Query for MS Access (using ODBC)
+    $query = "SELECT * FROM FPC WHERE YEAR(date) = $year ORDER BY ID DESC";
     $result = odbc_exec($conn, $query);
+
     if (!$result) {
         die("Query failed: " . odbc_errormsg());
     }
 
     // Fetch data from ODBC
+    $data = [];
     while ($row = odbc_fetch_array($result)) {
         $data[] = $row;
     }
 } else {
-    // Query for MySQL with JOINs
-    $query = "SELECT FPC.*, 
-                     product_list.PARTNAME, PARTNUMBER, 
-                     category_tbl.cat_name, 
-                     trigger_tbl.trigger_name 
-              FROM FPC 
-              LEFT JOIN product_list ON FPC.PART_ID = product_list.ID 
-              LEFT JOIN category_tbl ON FPC.CATEGORY_ID = category_tbl.ID 
-              LEFT JOIN trigger_tbl ON FPC.TRIGGER_ID = trigger_tbl.ID 
-              WHERE YEAR(FPC.date) = $year 
-              ORDER BY FPC.ID DESC";
-
+    // Query for MySQL
+    $query = "SELECT * FROM FPC WHERE YEAR(date) = $year ORDER BY ID DESC";
     $result = mysqli_query($conn, $query);
+
     if (!$result) {
         die("Query failed: " . mysqli_error($conn));
     }
 
     // Fetch data from MySQL
-    while ($row = mysqli_fetch_assoc($result)) {
-        $data[] = $row;
-    }
+    $data = mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -97,23 +76,16 @@ if ($db_type == "access") {
             overflow: hidden;
             transition: all 0.35s ease-in-out;
             background-color: #fafbfe;
-            margin-left: 70px;
         }
 
         #sidebar {
             width: 70px;
             min-width: 70px;
-            height: 100vh;
-            /* Full height of the viewport */
             z-index: 1000;
             transition: all .25s ease-in-out;
             background-color: #0e2238;
             display: flex;
             flex-direction: column;
-            position: fixed;
-            /* Fixes the sidebar in place */
-            top: 0;
-            left: 0;
         }
 
         #sidebar.expand {
@@ -220,16 +192,6 @@ if ($db_type == "access") {
             background-color: #0e2238 !important;
             color: white;
         }
-
-        .table-container {
-            height: 90vh;
-            /* Adjust based on requirement */
-            overflow: auto;
-            /* Prevent content overflow */
-        }
-    </style>
-    <style>
-
     </style>
 </head>
 
@@ -241,7 +203,7 @@ if ($db_type == "access") {
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div class="sidebar-logo">
-                    <a href="#">MENU</a>
+                    <a href="#">LOGO</a>
                 </div>
             </div>
             <ul class="sidebar-nav">
@@ -258,9 +220,21 @@ if ($db_type == "access") {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="tables.php" class="sidebar-link">
+                    <a href="ncprlist.php" class="sidebar-link">
                         <i class="fa-regular fa-address-card"></i>
-                        <span>Tables</span>
+                        <span>NCPR List</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        <i class="fa-solid fa-helmet-safety"></i>
+                        <span>Product Key</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        <i class="fa-solid fa-paperclip"></i>
+                        <span>Engineer List</span>
                     </a>
                 </li>
                 <li class="sidebar-item">
@@ -278,10 +252,97 @@ if ($db_type == "access") {
             </div>
         </aside>
         <div class="main p-3">
+            <div class="row">
+                <div class="col-md-6 col-lg-3">
+                    <a href="ncprlist.php" class="text-decoration-none">
+                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
+                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
+                                <div class="card-body p-0 d-flex flex-fill">
+                                    <div class="row g-5 align-items-center">
+                                        <div class="col-6">
+                                            <div class="p-3 m-1">
+                                                <h5>NCPR Files</h5>
+                                                <p class="mb-0">#</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 d-flex justify-content-end">
+                                            <img src="asset/folder.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <a href="ncprlist.php" class="text-decoration-none">
+                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
+                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
+                                <div class="card-body p-0 d-flex flex-fill">
+                                    <div class="row g-5 align-items-center">
+                                        <div class="col-6">
+                                            <div class="p-3 m-1">
+                                                <h5>Open Files</h5>
+                                                <p class="mb-0">#</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 d-flex justify-content-end">
+                                            <img src="asset/open.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <a href="productkey.php" class="text-decoration-none">
+                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
+                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
+                                <div class="card-body p-0 d-flex flex-fill">
+                                    <div class="row g-5 align-items-center">
+                                        <div class="col-6">
+                                            <div class="p-3 m-1">
+                                                <h5>Product Key</h5>
+                                                <p class="mb-0">#</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 d-flex justify-content-end">
+                                            <img src="asset/close.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <a href="status.php" class="text-decoration-none">
+                        <div class="card text-white mb-3 shadow-sm border-0 hover-shadow">
+                            <div class="card border-0 shadow-sm flex-fill hover-shadow">
+                                <div class="card-body p-0 d-flex flex-fill">
+                                    <div class="row g-5 align-items-center">
+                                        <div class="col-6">
+                                            <div class="p-3 m-1">
+                                                <h5>Engineer List</h5>
+                                                <p class="mb-0">#</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 d-flex justify-content-end">
+                                            <img src="asset/eng.png" alt="Icon" class="img-fluid" style="width: 100px; height: 100px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-body">
                     <div class="card-title">
-                        <h5 class="mb-3">Flexible Plastic Circuit Table</h5>
+                        <h5 class="mb-3">NCPR Table</h5>
                     </div>
                     <div class="table-container table-responsive mt-3">
                         <div class="d-flex align-items-center gap-3">
@@ -309,21 +370,12 @@ if ($db_type == "access") {
                                 </ul>
                             </div>
                         </div>
-                        <style>
-                            th {
-                                font-size: 12px;
-                            }
-
-                            td {
-                                font-size: 10px;
-                            }
-                        </style>
                         <table id="myTable" class="table table-striped table-bordered table-hover" style="width:100%">
-                            <thead class="table-primary text-center">
+                            <thead>
                                 <tr>
                                     <!-- Adjust column names based on the fields from your FPC table -->
                                     <th>ID</th>
-                                    <th>FY</th>
+                                    <th>FISCAL YR</th>
                                     <th>MONTH</th>
                                     <th>DATE</th>
                                     <th>CATEGORY</th>
@@ -342,17 +394,12 @@ if ($db_type == "access") {
                             <tbody>
                                 <?php
                                 // Array of columns you want to include in the data-* attributes
-                                $data_columns = ['ID', 'FY', 'MONTH', 'DATE', 'cat_name', 'trigger_name', 'NT_NF', 'ISSUE', 'PARTNUMBER', 'PRODUCT', 'LOT_SUBLOT', 'IN_VALUE', 'OUT_VALUE', 'REJECT'];
+                                $data_columns = ['ID', 'FY', 'MONTH', 'DATE', 'CATEGORY', 'TRIGGER', 'NT_NF', 'ISSUE', 'PART NO', 'PRODUCT', 'LOT/SUBLOT', 'IN', 'OUT', 'REJECT'];
 
                                 // Loop through each row of data and create table rows
                                 foreach ($data as $row) {
                                     echo "<tr class='table-row' id='triggerElement' data-bs-toggle='modal' data-bs-target='#reservationModal' 
-                                    ";
-                                    // Add data-* attributes dynamically
-                                    foreach ($data_columns as $column) {
-                                        echo " data-" . strtolower(str_replace('_', '-', $column)) . "='" . htmlspecialchars($row[$column] ?? '') . "'";
-                                    }
-                                    echo ">";
+                                    data-id='" . htmlspecialchars($row['ID']) . "'>";
 
                                     // Output table cells for each row
                                     foreach ($data_columns as $column) {
@@ -375,38 +422,8 @@ if ($db_type == "access") {
                     </div>
                 </div>
             </div>
-            <div class="card mt-5">
-                <div class="card-body">
-                    <div class="card-title">
-                        <h5 class="mb-3">Informative Charts</h5>
-                    </div>
-                    <div class="table-container table-responsive mt-3">
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
-    <!-- Bootstrap Modal -->
-    <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalLabel">Row Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Content will be inserted here dynamically -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary edit-btn-modal">Edit</button>
-                    <button type="button" class="btn btn-danger delete-btn-modal">Delete</button>
-
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 
     <script src="assets/vendor/bootstrap/js/jquery.min.js"></script>
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -455,31 +472,6 @@ if ($db_type == "access") {
             var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
-
-            document.querySelectorAll(".table-row").forEach(row => {
-                row.addEventListener("click", function() {
-                    const modalBody = document.querySelector("#reservationModal .modal-body");
-                    let modalContent = "<div class='container'><div class='row'>";
-
-                    // Extract all data-* attributes
-                    Array.from(this.attributes).forEach(attr => {
-                        if (attr.name.startsWith("data-")) {
-                            const key = attr.name.replace("data-", "").replace("-", " ").toUpperCase();
-                            const value = attr.value.trim() !== "" ? attr.value : "N/A"; // Handle empty values
-
-                            modalContent += `
-                        <div class='col-md-6 mb-2'>
-                            <strong>${key}:</strong> ${value}
-                        </div>
-                    `;
-                        }
-                    });
-
-                    modalContent += "</div></div>";
-                    modalBody.innerHTML = modalContent;
-                });
-            });
-
         });
     </script>
 
@@ -496,12 +488,12 @@ if ($db_type == "access") {
                     bottom: 'paging',
                     bottomStart: null,
                     bottomEnd: null
-                },
+                }
             });
 
             var $thead = $('#myTable thead tr');
             var columnsToToggle = [];
-            var hiddenColumns = []; // Columns to be hidden initially
+            var hiddenColumns = ["FISCAL YR", "MONTH", "NT/NF", "LOT/ SUBLOT"]; // Columns to be hidden initially
 
             // Extract column names dynamically
             $thead.find('th').each(function(index) {
@@ -540,13 +532,6 @@ if ($db_type == "access") {
                 column.visible(!column.visible());
             });
         })
-    </script>
-    <script>
-        // JavaScript to trigger automatic form submission when a new year is selected
-        document.getElementById("year").addEventListener("change", function() {
-            // Submit the form when the user selects a new year
-            document.getElementById("year-form").submit();
-        });
     </script>
 </body>
 
