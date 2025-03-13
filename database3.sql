@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 12, 2025 at 01:15 PM
+-- Generation Time: Mar 13, 2025 at 03:11 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -29,8 +29,16 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `category_tbl` (
   `ID` int(255) NOT NULL,
-  `name` varchar(255) NOT NULL
+  `cat_name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `category_tbl`
+--
+
+INSERT INTO `category_tbl` (`ID`, `cat_name`) VALUES
+(1, 'sorting'),
+(2, 'asdas');
 
 -- --------------------------------------------------------
 
@@ -43,11 +51,11 @@ CREATE TABLE `fpc` (
   `FY` varchar(255) NOT NULL,
   `MONTH` varchar(255) NOT NULL,
   `DATE` date NOT NULL,
-  `CATEGORY` varchar(255) NOT NULL,
-  `TRIGGER` varchar(255) NOT NULL,
+  `CATEGORY_ID` varchar(255) NOT NULL,
+  `TRIGGER_ID` varchar(255) NOT NULL,
   `NT_NF` varchar(255) NOT NULL,
   `ISSUE` varchar(255) NOT NULL,
-  `PART_NO` varchar(255) NOT NULL,
+  `PART_ID` varchar(255) NOT NULL,
   `PRODUCT` varchar(255) NOT NULL,
   `LOT_SUBLOT` varchar(255) NOT NULL,
   `IN_VALUE` int(11) NOT NULL,
@@ -59,48 +67,12 @@ CREATE TABLE `fpc` (
 -- Dumping data for table `fpc`
 --
 
-INSERT INTO `fpc` (`ID`, `FY`, `MONTH`, `DATE`, `CATEGORY`, `TRIGGER`, `NT_NF`, `ISSUE`, `PART_NO`, `PRODUCT`, `LOT_SUBLOT`, `IN_VALUE`, `OUT_VALUE`, `REJECT`) VALUES
-(1, 'FY', 'March', '2025-03-07', 'sorting', 'sorting', 'NTPI', 'rework', '123', '321', '123', 123, 312, 23),
-(2, 'FY', 'March', '2025-03-07', 'sorting', 'sorting', 'NTPI', 'rework', '123', '321', '123', 123, 312, 23),
-(3, 'FY', 'March', '2025-03-07', 'sorting', 'sorting', 'NTPI', 'rework', '123', '321', '123', 123, 312, 23),
-(4, 'FY', 'March', '2025-03-07', 'sorting', 'sorting', 'NTPI', 'rework', '123', '321', '123', 123, 312, 23),
-(5, 'FY', 'March', '2025-03-07', 'sorting', 'sorting', 'NTPI', 'rework', '123', '321', '123', 123, 312, 23),
-(6, 'FY', 'March', '2025-03-07', 'sorting', 'sorting', 'NTPI', 'rework', '123', '321', '123', 123, 312, 23),
-(7, 'FY25', 'March', '2025-03-07', 'REWORK', 'NCPR', 'NFLD', 'REPAIR', '123', 'RE-ENTEK', '1234', 12, 10, 2),
-(8, 'FY25', 'Array', '2025-03-07', 's', 's', 'NTPI', 's', '0', 'sss', 'sss', 12, 12, 2),
-(9, 'FY25', 'Array', '2025-03-07', 's', 's', 'NTPI', 's', '0', 's', 's', 1, 1, 2),
-(10, 'FY25', 'Array', '2025-03-07', 'a', 'a', 'NTPI', 'a', '0', 'a', 'a', 2, 2, 1),
-(11, 'FY25', 'Array', '2025-03-08', 'a', 'a', 'NTPI', 'a', '0', 'a', 'a', 213, 123, 123),
-(12, 'FY25', 'Array', '2025-03-08', 'sorting', 's', 'NTPI', 's', '0', 's', 's', 123, 213, 123),
-(13, 'FY25', 'Array', '2025-03-08', 'b', 'b', 'NTPI', 'b', '0', 'b', 'b', 12, 21, 212),
-(14, 'FY25', 'Array', '2025-03-08', 'c', 'c', 'NTPI', 'c', '0', 'c', 'c', 123, 32, 4),
-(15, 'FY25', 'Array', '2025-03-08', 'd', 'd', 'NFLD', 'd', '0', 'd', 'asd', 123, 123, 23),
-(16, 'FY25', 'Array', '2025-03-08', 'e', 'e', 'NTPI', 'e', '0', 'e', 'e', 123, 32, 32),
-(17, 'FY25', 'January', '2025-03-08', 'A', 'A', 'NTPI', 'A', '0', 'A', 'A', 1, 2, 2),
-(18, 'FY25', 'a', '2025-03-08', 'B', 'B', 'NFLD', 'B', '1234-2', 'B', 'B', 3, 2, 1),
-(19, 'FY25', 'January', '2025-03-08', 'a', 'a', 'NTPI', 'a', '123-2', 'a', 'a', 12, 21, 212),
-(20, 'FY25', 'a', '2025-03-08', 'b', 'b', 'NTPI', 'b', '432-213', 'b', '123', 32, 3, 29),
-(21, 'FY25', 'March', '2025-03-08', 'a', 'a', 'NTPI', 'a', 'a', 'a', 'a', 12, 21, 212),
-(22, 'FY25', 'a', '2025-03-08', '21', '21', 'NFLD', '21', '21', '12', '12', 32, 1, 2),
-(23, 'FY25', 'January', '2025-03-08', 'a', 'a', 'NTPI', 'a', 'a', 'a', 'a', 3, 2, 1),
-(24, 'FY25', 'February', '2025-03-08', 'b', 'b', 'NFLD', 'b', 'b', 'b', 'b', 2, 1, 1),
-(25, 'FY25', 'January', '2025-03-08', 'c', 'c', 'NFLD', 'c', 'c', 'c', 'c', 3, 2, 1),
-(26, 'FY25', 'March', '2025-03-08', 'd', 'd', 'NFLD', 'd', 'd', 'd', 'd', 4, 2, 2),
-(27, 'FY25', 'March', '2025-03-08', '213', '123', 'NTPI', '213', '123', '123', '123', 3, 2, 1),
-(28, 'FY25', 'March', '2025-03-08', 'qwe', 'qwe', 'NFLD', 'qwe', 'qwe', 'wqe', 'qwe', 3, 21, 1),
-(29, 'FY25', 'March', '2025-03-08', 'a', 'sorting', 'NFLD', 'rework', '12345689-01', 'qc_fvi', '12356546', 12, 2, 10),
-(30, 'FY25', 'January', '2025-03-08', 'REWORK', 'NCPR', 'NFLD', 's', '12345689-01', 'qc_fvi', '123-4', 23, 1, 22),
-(31, 'FY25', 'February', '2025-03-08', 'sorting', 'NCPR', 'NTPI', '12', 'a', 'q', '123-5', 3, 2, 1),
-(32, 'FY25', 'March', '2025-03-12', 'sorting', 'NCPR', '', 'REPAIR', '12345689-02', 're-entek', '123456789-0000', 12, 11, 1),
-(33, 'FY25', 'March', '2025-03-12', 'sorting', 'NCPR', '', 'REPAIR', '12345689-01', 'qc_fvi', '1234-4322', 3, 2, 1),
-(34, 'FY25', 'March', '2025-03-12', 'REWORK', 'sorting', '', 'rework', '12345689-02', 'qc_fvi', '4567', 33, 31, 2),
-(35, 'FY25', 'March', '2025-03-12', 'sorting', 'NCPR', '', 'qwe', '12345689-03', 're_entek', '234432', 3, 2, 1),
-(36, 'FY25', 'March', '2025-03-12', 'sorting', 'sorting', '', 'rework', '12345689-01', 'qc_fvi', '1', 1, 1, 1),
-(37, 'FY25', 'March', '2025-03-12', 'REWORK', 'NCPR', '', 'REPAIR', '12345689-03', 're_entek', '2', 2, 2, 2),
-(38, 'FY25', 'March', '2025-03-12', 'sorting', 'sorting', '', 's', '12345689-02', 'qc_fvi', '3', 3, 3, 3),
-(39, 'FY25', 'January', '2025-03-12', 'REWORK', 'NCPR', '', 'rework', '12345689-01', 'qc_fvi', '2', 2, 2, 2),
-(40, 'FY25', 'February', '2025-03-12', 'sorting', 'sorting', '', 'REPAIR', '12345689-04', 'relunctant', '3', 3, 3, 3),
-(41, 'FY25', 'March', '2025-03-12', 'sorting', 'NCPR', '', 'REPAIR', '12345689-04', 'relunctant', '4631', 31, 21, 11);
+INSERT INTO `fpc` (`ID`, `FY`, `MONTH`, `DATE`, `CATEGORY_ID`, `TRIGGER_ID`, `NT_NF`, `ISSUE`, `PART_ID`, `PRODUCT`, `LOT_SUBLOT`, `IN_VALUE`, `OUT_VALUE`, `REJECT`) VALUES
+(1, 'FY25', 'March', '2025-03-13', '1', '1', 'NTPI', 'issues', '4', 'relunctant', 'asdasdasdasdasdas', 1, 2, 0),
+(2, 'FY25', 'March', '2025-03-13', '1', '2', 'NTPI', 'rework', '2', 'qc_fvi', 'asdcdaawvfa', 3, 2, 1),
+(3, 'FY25', 'February', '2025-03-12', '2', '3', 'NFLD', 'asdas', '5', 'asd', 'asdasdas', 32, 21, 11),
+(4, 'FY25', 'March', '2025-03-14', '2', '4', 'NFLD', 'asdasdas', '6', 'dasdasdas', 'asdasdasd', 3, 2, 1),
+(5, 'FY25', 'March', '2025-03-14', '1', '2', 'NTPI', 'rework', '1', 'qc_fvi', '2132', 21, 2, 19);
 
 -- --------------------------------------------------------
 
@@ -133,7 +105,9 @@ INSERT INTO `product_list` (`ID`, `PARTNUMBER`, `PARTNAME`) VALUES
 (1, '12345689-01', 'qc_fvi'),
 (2, '12345689-02', 'qc_fvi'),
 (3, '12345689-03', 're_entek'),
-(4, '12345689-04', 'relunctant');
+(4, '12345689-04', 'relunctant'),
+(5, 'asdas', 'asd'),
+(6, 'asdasdas', 'dasdasdas');
 
 -- --------------------------------------------------------
 
@@ -143,8 +117,18 @@ INSERT INTO `product_list` (`ID`, `PARTNUMBER`, `PARTNAME`) VALUES
 
 CREATE TABLE `trigger_tbl` (
   `ID` int(255) NOT NULL,
-  `name` varchar(255) NOT NULL
+  `trigger_name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `trigger_tbl`
+--
+
+INSERT INTO `trigger_tbl` (`ID`, `trigger_name`) VALUES
+(1, 'trgigger'),
+(2, 'NCPR'),
+(3, 'asdas'),
+(4, 'sadsadasd');
 
 --
 -- Indexes for dumped tables
@@ -182,25 +166,25 @@ ALTER TABLE `trigger_tbl`
 -- AUTO_INCREMENT for table `category_tbl`
 --
 ALTER TABLE `category_tbl`
-  MODIFY `ID` int(255) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `fpc`
 --
 ALTER TABLE `fpc`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `product_list`
 --
 ALTER TABLE `product_list`
-  MODIFY `ID` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `ID` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `trigger_tbl`
 --
 ALTER TABLE `trigger_tbl`
-  MODIFY `ID` int(255) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
