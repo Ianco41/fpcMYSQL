@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 13, 2025 at 03:11 PM
+-- Generation Time: Mar 14, 2025 at 02:37 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -38,7 +38,8 @@ CREATE TABLE `category_tbl` (
 
 INSERT INTO `category_tbl` (`ID`, `cat_name`) VALUES
 (1, 'sorting'),
-(2, 'asdas');
+(2, 'asdas'),
+(3, '');
 
 -- --------------------------------------------------------
 
@@ -60,19 +61,27 @@ CREATE TABLE `fpc` (
   `LOT_SUBLOT` varchar(255) NOT NULL,
   `IN_VALUE` int(11) NOT NULL,
   `OUT_VALUE` int(11) NOT NULL,
-  `REJECT` int(11) NOT NULL
+  `REJECT` int(11) NOT NULL,
+  `MINUTES` int(11) NOT NULL,
+  `deleted_At` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `fpc`
 --
 
-INSERT INTO `fpc` (`ID`, `FY`, `MONTH`, `DATE`, `CATEGORY_ID`, `TRIGGER_ID`, `NT_NF`, `ISSUE`, `PART_ID`, `PRODUCT`, `LOT_SUBLOT`, `IN_VALUE`, `OUT_VALUE`, `REJECT`) VALUES
-(1, 'FY25', 'March', '2025-03-13', '1', '1', 'NTPI', 'issues', '4', 'relunctant', 'asdasdasdasdasdas', 1, 2, 0),
-(2, 'FY25', 'March', '2025-03-13', '1', '2', 'NTPI', 'rework', '2', 'qc_fvi', 'asdcdaawvfa', 3, 2, 1),
-(3, 'FY25', 'February', '2025-03-12', '2', '3', 'NFLD', 'asdas', '5', 'asd', 'asdasdas', 32, 21, 11),
-(4, 'FY25', 'March', '2025-03-14', '2', '4', 'NFLD', 'asdasdas', '6', 'dasdasdas', 'asdasdasd', 3, 2, 1),
-(5, 'FY25', 'March', '2025-03-14', '1', '2', 'NTPI', 'rework', '1', 'qc_fvi', '2132', 21, 2, 19);
+INSERT INTO `fpc` (`ID`, `FY`, `MONTH`, `DATE`, `CATEGORY_ID`, `TRIGGER_ID`, `NT_NF`, `ISSUE`, `PART_ID`, `PRODUCT`, `LOT_SUBLOT`, `IN_VALUE`, `OUT_VALUE`, `REJECT`, `MINUTES`, `deleted_At`) VALUES
+(1, '', '', '0000-00-00', '3', '5', '', '', '', '', '', 0, 0, 0, 0, NULL),
+(2, '', '', '0000-00-00', '3', '5', '', '', '', '', '', 0, 0, 0, 0, NULL),
+(3, 'FY25', 'March', '2025-03-12', '1', '3', 'NFLD', 'asdas', '1', 'qc_fvi', 'asdasdas', 32, 21, 11, 0, '2025-03-14 13:27:15'),
+(4, 'FY25', 'March', '2025-03-14', '2', '4', 'NFLD', 'asdasdas', '6', 'dasdasdas', 'asdasdasd', 3, 2, 1, 0, '2025-03-14 13:31:18'),
+(5, 'FY25', 'March', '2025-03-14', '1', '2', '', 'rework', '', '', '1234-5678-90', 21, 2, 19, 0, NULL),
+(6, '', '', '0000-00-00', '3', '5', '', '', '', '', '', 0, 0, 0, 0, NULL),
+(7, 'FY25', 'March', '2025-03-12', '2', '3', 'NTPI', 'asdas', '5', 'asd', 'asdasdas', 32, 21, 11, 0, NULL),
+(8, 'FY25', 'March', '2025-03-12', '2', '3', 'NTPI', 'asdas', '5', 'asd', 'asdasdas', 32, 21, 11, 0, NULL),
+(9, 'FY25', 'March', '2025-03-12', '2', '3', 'NFLD', 'asdas', '5', 'asd', 'asdasdas', 32, 21, 11, 0, NULL),
+(10, 'FY25', 'February', '2025-03-12', '2', '3', 'NFLD', 'asdas', '5', 'asd', 'asdasdas', 32, 21, 11, 0, NULL),
+(11, 'FY25', 'March', '2025-03-12', '1', '1', 'NTPI', 'rework', '1', 'qc_fvi', 'asdasdas', 32, 21, 11, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -128,7 +137,8 @@ INSERT INTO `trigger_tbl` (`ID`, `trigger_name`) VALUES
 (1, 'trgigger'),
 (2, 'NCPR'),
 (3, 'asdas'),
-(4, 'sadsadasd');
+(4, 'sadsadasd'),
+(5, '');
 
 --
 -- Indexes for dumped tables
@@ -166,13 +176,13 @@ ALTER TABLE `trigger_tbl`
 -- AUTO_INCREMENT for table `category_tbl`
 --
 ALTER TABLE `category_tbl`
-  MODIFY `ID` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `ID` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `fpc`
 --
 ALTER TABLE `fpc`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `product_list`
@@ -184,7 +194,7 @@ ALTER TABLE `product_list`
 -- AUTO_INCREMENT for table `trigger_tbl`
 --
 ALTER TABLE `trigger_tbl`
-  MODIFY `ID` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `ID` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
