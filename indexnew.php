@@ -36,7 +36,8 @@ if ($db_type == "access") {
               LEFT JOIN product_list ON FPC.PART_ID = product_list.ID 
               LEFT JOIN category_tbl ON FPC.CATEGORY_ID = category_tbl.ID 
               LEFT JOIN trigger_tbl ON FPC.TRIGGER_ID = trigger_tbl.ID 
-              WHERE YEAR(FPC.date) = $year 
+              WHERE YEAR(FPC.date) = $year
+              AND FPC.deleted_at IS NULL
               ORDER BY FPC.ID DESC";
 
     $result = mysqli_query($conn, $query);
@@ -62,6 +63,7 @@ if ($db_type == "access") {
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/all.min.css">
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/fontawesome.min.css">
     <link rel="stylesheet" href="assets/DataTables/datatables.min.css" />
+    <link rel="stylesheet" href="assets/css/sweetalert2.min.css">
     <style>
         ::after,
         ::before {
@@ -243,7 +245,26 @@ if ($db_type == "access") {
         }
     </style>
     <style>
+        .highlight-hidden {
+            background-color: #f8d7da;
+            /* Light red background for hidden columns */
+            color: #721c24;
+            /* Dark red text color */
+            font-weight: bold;
+            /* Optional: To make it stand out more */
+        }
 
+        .dropdown-menu .dropdown-item {
+            cursor: default;
+        }
+
+        th {
+            font-size: 12px;
+        }
+
+        td {
+            font-size: 10px;
+        }
     </style>
 </head>
 
@@ -353,28 +374,6 @@ if ($db_type == "access") {
                                 </ul>
                             </div>
                         </div>
-                        <style>
-                            .highlight-hidden {
-                                background-color: #f8d7da;
-                                /* Light red background for hidden columns */
-                                color: #721c24;
-                                /* Dark red text color */
-                                font-weight: bold;
-                                /* Optional: To make it stand out more */
-                            }
-
-                            .dropdown-menu .dropdown-item {
-                                cursor: default;
-                            }
-
-                            th {
-                                font-size: 12px;
-                            }
-
-                            td {
-                                font-size: 10px;
-                            }
-                        </style>
                         <table id="myTable" class="table table-striped table-bordered table-hover" style="width:100%">
                             <thead class="table-primary text-center">
                                 <tr>
@@ -404,12 +403,7 @@ if ($db_type == "access") {
                                 // Loop through each row of data and create table rows
                                 foreach ($data as $row) {
                                     echo "<tr class='table-row' id='triggerElement' data-bs-toggle='modal' data-bs-target='#reservationModal' 
-                                    ";
-                                    // Add data-* attributes dynamically
-                                    foreach ($data_columns as $column) {
-                                        echo " data-" . strtolower(str_replace('_', '-', $column)) . "='" . htmlspecialchars($row[$column] ?? '') . "'";
-                                    }
-                                    echo ">";
+                                    data-id='" . htmlspecialchars($row['ID'] ?? '') . "'>";
 
                                     // Output table cells for each row
                                     foreach ($data_columns as $column) {
@@ -422,8 +416,6 @@ if ($db_type == "access") {
                                 if ($db_type == "access") {
                                     // Close the ODBC result
                                     odbc_free_result($result);
-
-                                    // Close the connection
                                     odbc_close($conn);
                                 }
                                 ?>
@@ -443,33 +435,123 @@ if ($db_type == "access") {
             </div>
         </div>
     </div>
-    <!-- Bootstrap Modal -->
-    <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <!-- Modal -->
+    <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalLabel">Row Details</h5>
+                    <h5 class="modal-title">Record ID: <span id="recordId"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Content will be inserted here dynamically -->
+                    <form id="modalForm">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="form-label">FY</div>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="fy" name="FY" required readonly>
+                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="form-label">Month</div>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="month" name="MONTH" required readonly>
+                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="form-label">Date</div>
+                                <input type="date" class="form-control" id="date" name="DATE" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="form-label">NT/NF</div>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="nt_nf" name="NT_NF" required readonly>
+                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Category</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="category" name="CATEGORY" placeholder="Type at least 2 letters..." required>
+                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Trigger</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="trigger" name="TRIGGER" placeholder="Type Trigger..." required>
+                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Issue</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="issue" name="ISSUE" placeholder="Type Issue..." required>
+                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Part No.</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="partNumber" name="PART_NO" placeholder="Type Part No..." required>
+                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Part Name</label>
+                                <input type="text" class="form-control" id="partName" name="PRODUCT" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Lot/Sublot</label>
+                                <input type="text" class="form-control" id="lotSublot" name="LOT_SUBLOT" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Qty-In</label>
+                                <input type="number" class="form-control" id="inValue" name="IN" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Qty-Out</label>
+                                <input type="number" class="form-control" id="outValue" name="OUT" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Reject</label>
+                                <input type="number" class="form-control" id="reject" name="REJECT" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Minutes</label>
+                                <input type="number" class="form-control" id="minutes" name="MINUTES" required>
+                            </div>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary edit-btn-modal">Edit</button>
-                    <button type="button" class="btn btn-danger delete-btn-modal">Delete</button>
-
+                    <button id="editButton" class="btn btn-primary">Edit</button>
+                    <button id="deleteButton" class="btn btn-danger">Delete</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
 
-
     <script src="assets/vendor/bootstrap/js/jquery.min.js"></script>
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/bootstrap/js/all.min.js"></script>
     <script src="assets/vendor/bootstrap/js/fontawesome.min.js"></script>
     <script src="assets/DataTables/datatables.min.js"></script>
+    <script src="assets/js/sweetalert2.min.js"></script>
     <!-- DataTable Initialization -->
     <script>
         $(document).ready(function() {
@@ -513,30 +595,147 @@ if ($db_type == "access") {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
+            // Attach event listener to all rows in the table
             document.querySelectorAll(".table-row").forEach(row => {
                 row.addEventListener("click", function() {
-                    const modalBody = document.querySelector("#reservationModal .modal-body");
-                    let modalContent = "<div class='container'><div class='row'>";
+                    let recordId = this.getAttribute("data-id"); // Get the record ID
 
-                    // Extract all data-* attributes
-                    Array.from(this.attributes).forEach(attr => {
-                        if (attr.name.startsWith("data-")) {
-                            const key = attr.name.replace("data-", "").replace("-", " ").toUpperCase();
-                            const value = attr.value.trim() !== "" ? attr.value : "N/A"; // Handle empty values
+                    fetch("fetch_modaldata.php?id=" + recordId)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Fetched Data:", data); // Debugging output
+                            if (data.status === "success") {
+                                // Populate modal fields
+                                document.getElementById("recordId").textContent = data.data.ID;
+                                document.getElementById("fy").value = data.data.FY;
+                                document.getElementById("month").value = data.data.MONTH;
+                                document.getElementById("date").value = data.data.DATE;
+                                document.getElementById("nt_nf").value = data.data.NT_NF;
+                                document.getElementById("category").value = data.data.cat_name;
+                                document.getElementById("trigger").value = data.data.trigger_name;
+                                document.getElementById("issue").value = data.data.ISSUE;
+                                document.getElementById("partNumber").value = data.data.PARTNUMBER;
+                                document.getElementById("partName").value = data.data.PARTNAME;
+                                document.getElementById("lotSublot").value = data.data.LOT_SUBLOT;
+                                document.getElementById("inValue").value = data.data.IN_VALUE;
+                                document.getElementById("outValue").value = data.data.OUT_VALUE;
+                                document.getElementById("reject").value = data.data.REJECT;
+                                document.getElementById("minutes").value = data.data.MINUTES;
 
-                            modalContent += `
-                        <div class='col-md-6 mb-2'>
-                            <strong>${key}:</strong> ${value}
-                        </div>
-                    `;
-                        }
-                    });
+                                // Disable all input fields and hide dropdowns when viewing
+                                document.querySelectorAll("#modalForm input, #modalForm select").forEach(input => {
+                                    input.setAttribute("disabled", "true");
+                                });
 
-                    modalContent += "</div></div>";
-                    modalBody.innerHTML = modalContent;
+                                document.querySelectorAll("#modalForm .dropdown-toggle").forEach(btn => {
+                                    btn.classList.add("d-none");
+                                });
+
+                                // Show the modal
+                                let modal = new bootstrap.Modal(document.getElementById("reservationModal"));
+                                modal.show();
+
+                                // Show Edit button, hide Save button
+                                document.getElementById("editButton").classList.remove("d-none");
+                            } else {
+                                // Show SweetAlert if record is not found
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops!',
+                                    text: data.message,
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        })
+                        .catch(error => console.error("Error fetching data:", error));
                 });
             });
 
+            document.getElementById("editButton").addEventListener("click", function() {
+                // Find the active row that was clicked and opened in the modal
+                let activeRow = document.querySelector(".table-row.active");
+
+                if (activeRow) {
+                    let updateID = activeRow.getAttribute("data-id"); // Get the data-id from the row
+
+                    if (updateID) {
+                        window.location.href = `updateform.php?updateID=${updateID}`;
+                    } else {
+                        alert("Update ID not found!");
+                    }
+                } else {
+                    alert("No row selected!");
+                }
+            });
+            document.querySelectorAll(".table-row").forEach(row => {
+                row.addEventListener("click", function() {
+                    // Remove 'active' class from all rows
+                    document.querySelectorAll(".table-row").forEach(r => r.classList.remove("active"));
+
+                    // Add 'active' class to the clicked row
+                    this.classList.add("active");
+                });
+            });
+            const modalElement = document.getElementById("reservationModal");
+            const modal = new bootstrap.Modal(modalElement);
+
+            modalElement.addEventListener("hidden.bs.modal", function() {
+                document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+                    backdrop.remove();
+                });
+                document.body.classList.remove("modal-open"); // Remove the modal-open class
+            });
+            const deleteButton = document.getElementById("deleteButton");
+
+            deleteButton.addEventListener("click", async function() {
+                const recordId = document.getElementById("recordId").textContent.trim(); // Get record ID
+
+                if (!recordId) {
+                    alert("Error: No record ID found.");
+                    return;
+                }
+
+                if (confirm(`Are you sure you want to delete Record ID: ${recordId}?`)) {
+                    try {
+                        //Perform soft delete via API call
+                        let response = await fetch("delete.php", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                recordId
+                            })
+                        });
+
+                        let result = await response.json();
+                        console.log("Server response:", result); // Log server response
+                        if (!result.success) {
+                            alert("Error: Unable to delete the record.");
+                            return;
+                        }
+
+                        //Close the modal after successful deletion
+                        const modalElement = document.getElementById("reservationModal");
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        modalInstance.hide();
+
+                        //Remove backdrop if necessary
+                        setTimeout(() => {
+                            document.querySelectorAll(".modal-backdrop").forEach((backdrop) => backdrop.remove());
+                            document.body.classList.remove("modal-open");
+                        }, 300);
+
+                        alert("Record deleted successfully!");
+                        location.reload(); // Refresh table to reflect changes
+
+                    } catch (error) {
+                        console.error("Error deleting record:", error);
+                        alert("An error occurred while deleting the record.");
+                    }
+                }
+            });
         });
     </script>
 

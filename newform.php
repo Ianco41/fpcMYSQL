@@ -172,6 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/all.min.css">
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/fontawesome.min.css">
     <link rel="stylesheet" href="assets/DataTables/datatables.min.css" />
+    <link rel="stylesheet" href="assets/css/sweetalert2.min.css">
     <style>
         .card-body {
             width: 100%;
@@ -539,6 +540,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script src="assets/vendor/bootstrap/js/all.min.js"></script>
     <script src="assets/vendor/bootstrap/js/fontawesome.min.js"></script>
     <script src="assets/DataTables/datatables.min.js"></script>
+    <script src="assets/js/sweetalert2.min.js"></script>
     <!-- DataTable Initialization -->
     <script>
         $(document).ready(function() {
@@ -595,6 +597,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     } else {
                         rejectInput.value = ""; // Keep it empty
                     }
+                });
+            });
+            document.getElementById("recordForm").addEventListener("submit", function(event) {
+                event.preventDefault(); // Prevent actual form submission
+
+                // Show a SweetAlert confirmation message
+                Swal.fire({
+                    title: "Success!",
+                    text: "Your entry has been submitted successfully.",
+                    icon: "success",
+                    confirmButtonText: "OK"
+                }).then(() => {
+                    this.submit(); // Submit the form after confirmation
                 });
             });
         });
