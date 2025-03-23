@@ -193,18 +193,6 @@
                         <span>Tables</span>
                     </a>
                 </li>
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                        <i class="fa-solid fa-helmet-safety"></i>
-                        <span>Product Key</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                        <i class="fa-solid fa-paperclip"></i>
-                        <span>Engineer List</span>
-                    </a>
-                </li>
                 <li class="sidebar-item active">
                     <a href="#" class="sidebar-link">
                         <i class="fa-solid fa-gear"></i>

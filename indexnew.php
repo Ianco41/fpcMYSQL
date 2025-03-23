@@ -64,186 +64,7 @@ if ($db_type == "access") {
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/fontawesome.min.css">
     <link rel="stylesheet" href="assets/DataTables/datatables.min.css" />
     <link rel="stylesheet" href="assets/css/sweetalert2.min.css">
-    <style>
-        ::after,
-        ::before {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        li {
-            list-style: none;
-        }
-
-        h1 {
-            font-weight: 600;
-            font-size: 1.5rem;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-        }
-
-        .wrapper {
-            display: flex;
-        }
-
-        .main {
-            min-height: 100vh;
-            width: 100%;
-            overflow: hidden;
-            transition: all 0.35s ease-in-out;
-            background-color: #fafbfe;
-            margin-left: 70px;
-        }
-
-        #sidebar {
-            width: 70px;
-            min-width: 70px;
-            height: 100vh;
-            /* Full height of the viewport */
-            z-index: 1000;
-            transition: all .25s ease-in-out;
-            background-color: #0e2238;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            /* Fixes the sidebar in place */
-            top: 0;
-            left: 0;
-        }
-
-        #sidebar.expand {
-            width: 260px;
-            min-width: 260px;
-        }
-
-        .toggle-btn {
-            background-color: transparent;
-            cursor: pointer;
-            border: 0;
-            padding: 1rem 1.5rem;
-        }
-
-        .toggle-btn i {
-            font-size: 1.5rem;
-            color: #FFF;
-        }
-
-        .sidebar-logo {
-            margin: auto 0;
-        }
-
-        .sidebar-logo a {
-            color: #FFF;
-            font-size: 1.15rem;
-            font-weight: 600;
-        }
-
-        #sidebar:not(.expand) .sidebar-logo,
-        #sidebar:not(.expand) a.sidebar-link span {
-            display: none;
-        }
-
-        .sidebar-nav {
-            padding: 2rem 0;
-            flex: 1 1 auto;
-        }
-
-        a.sidebar-link {
-            padding: .625rem 1.5rem;
-            color: #FFF;
-            display: block;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            border-left: 3px solid transparent;
-        }
-
-        .sidebar-item,
-        .sidebar-footer {
-            position: relative;
-        }
-
-        .sidebar-link i {
-            font-size: 1.2rem;
-            color: white;
-            margin-right: 10px;
-        }
-
-        a.sidebar-link:hover {
-            background-color: rgba(255, 255, 255, .075);
-            border-left: 3px solid #3b7ddd;
-        }
-
-        .sidebar-item {
-            position: relative;
-        }
-
-        #sidebar:not(.expand) .sidebar-link span {
-            display: none;
-            position: absolute;
-            left: 80px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #0e2238;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        #sidebar:not(.expand) .sidebar-item:hover .sidebar-link span,
-        #sidebar:not(.expand) .sidebar-footer:hover .sidebar-link span {
-            display: block;
-        }
-
-        .sidebar-item,
-        .sidebar-footer {
-            position: relative;
-        }
-
-        .sidebar-item.active a {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-left: 3px solid #3b7ddd;
-            color: #3b7ddd;
-        }
-
-        .hover-shadow:hover {
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
-            transform: translateY(-5px);
-            transition: all 0.3s ease-in-out;
-            background-color: #0e2238 !important;
-            color: white;
-        }
-
-        .table-container {
-            height: 90vh;
-            /* Adjust based on requirement */
-            overflow: auto;
-            /* Prevent content overflow */
-        }
-
-        .search-row th {
-            text-align: center;
-            background: #f8f9fa;
-            padding: 5px;
-        }
-
-        .column-search {
-            width: 100%;
-            padding: 4px;
-            font-size: 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-    </style>
+    <?php include 'styles.php'?>
     <style>
         .highlight-hidden {
             background-color: #f8d7da;
@@ -266,7 +87,7 @@ if ($db_type == "access") {
             font-size: 10px;
         }
     </style>
-    
+
 </head>
 
 <body class="bg-white">
@@ -436,112 +257,33 @@ if ($db_type == "access") {
             </div>
         </div>
     </div>
+
     <!-- Modal -->
     <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Record ID: <span id="recordId"></span></h5>
+                    <h5 class="modal-title">Flexible Plastic Details<span id="recordId"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <form id="modalForm">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <div class="form-label">FY</div>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="fy" name="FY" required readonly>
-                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="form-label">Month</div>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="month" name="MONTH" required readonly>
-                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="form-label">Date</div>
-                                <input type="date" class="form-control" id="date" name="DATE" required>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <div class="form-label">NT/NF</div>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="nt_nf" name="NT_NF" required readonly>
-                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Category</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="category" name="CATEGORY" placeholder="Type at least 2 letters..." required>
-                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Trigger</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="trigger" name="TRIGGER" placeholder="Type Trigger..." required>
-                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Issue</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="issue" name="ISSUE" placeholder="Type Issue..." required>
-                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Part No.</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="partNumber" name="PART_NO" placeholder="Type Part No..." required>
-                                    <button class="btn btn-secondary dropdown-toggle" type="button"></button>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Part Name</label>
-                                <input type="text" class="form-control" id="partName" name="PRODUCT" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">Lot/Sublot</label>
-                                <input type="text" class="form-control" id="lotSublot" name="LOT_SUBLOT" required>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Qty-In</label>
-                                <input type="number" class="form-control" id="inValue" name="IN" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Qty-Out</label>
-                                <input type="number" class="form-control" id="outValue" name="OUT" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Reject</label>
-                                <input type="number" class="form-control" id="reject" name="REJECT" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Minutes</label>
-                                <input type="number" class="form-control" id="minutes" name="MINUTES" required>
-                            </div>
-                        </div>
-                    </form>
+                <div class="modal-body" id="fpcDetails">
                 </div>
                 <div class="modal-footer">
                     <button id="editButton" class="btn btn-primary">Edit</button>
                     <button id="deleteButton" class="btn btn-danger">Delete</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="editFpcDetails">
                 </div>
             </div>
         </div>
@@ -554,6 +296,14 @@ if ($db_type == "access") {
     <script src="assets/DataTables/datatables.min.js"></script>
     <script src="assets/js/sweetalert2.min.js"></script>
     <script src="assets/js/echarts.min.js"></script>
+
+    <script>
+        const hamBurger = document.querySelector(".toggle-btn");
+
+        hamBurger.addEventListener("click", function() {
+            document.querySelector("#sidebar").classList.toggle("expand");
+        });
+    </script>
     <!-- DataTable Initialization -->
     <script>
         $(document).ready(function() {
@@ -581,13 +331,77 @@ if ($db_type == "access") {
                     }
                 ]
             });
-        });
-    </script>
-    <script>
-        const hamBurger = document.querySelector(".toggle-btn");
+            var table = new DataTable('#myTable', {
+                info: true,
+                ordering: true,
+                order: [
+                    [0, 'desc']
+                ],
+                layout: {
+                    topStart: 'info',
+                    bottom: 'paging',
+                    bottomStart: null,
+                    bottomEnd: null
+                },
+                initComplete: function() {
+                    let api = this.api();
+                    let $thead = $('#myTable thead');
 
-        hamBurger.addEventListener("click", function() {
-            document.querySelector("#sidebar").classList.toggle("expand");
+                    // Add a new row for search inputs
+                    let $searchRow = $('<tr>').addClass('search-row');
+
+                    api.columns().every(function(index) {
+                        let column = this;
+                        let title = $(column.header()).text().trim();
+
+                        // Create input element
+                        let input = $('<input>')
+                            .attr('type', 'text')
+                            .attr('placeholder', `Search ${title}`)
+                            .addClass('column-search');
+
+                        // Append input to new search row
+                        let th = $('<th>').append(input);
+                        $searchRow.append(th);
+
+                        // Event listener for column search
+                        input.on('keyup', function() {
+                            column.search($(this).val()).draw();
+                        });
+                    });
+
+                    // Insert search row inside the table head
+                    $thead.prepend($searchRow);
+                }
+            });
+            document.querySelectorAll('a.toggle-vis').forEach((el) => {
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    let columnIdx = parseInt(e.target.getAttribute('data-column'));
+                    let column = table.column(columnIdx);
+                    let isVisible = !column.visible();
+                    column.visible(isVisible);
+
+                    // Hide/show the search input in the search row
+                    let searchRowTh = document.querySelector(`.search-row th:nth-child(${columnIdx + 1})`);
+                    if (searchRowTh) {
+                        searchRowTh.style.display = isVisible ? '' : 'none';
+                    }
+                });
+            });
+            // Update the dropdown to highlight hidden columns
+            table.on('column-visibility', function(e, settings, column, state) {
+                var columnIndex = column;
+                var dropdownItem = $('.dropdown-item[data-column="' + columnIndex + '"]');
+
+                // If the column is hidden, add a class to the corresponding dropdown item
+                if (!state) {
+                    dropdownItem.addClass('highlight-hidden');
+                } else {
+                    dropdownItem.removeClass('highlight-hidden');
+                }
+            });
         });
     </script>
     <script>
@@ -602,57 +416,21 @@ if ($db_type == "access") {
                 row.addEventListener("click", function() {
                     let recordId = this.getAttribute("data-id"); // Get the record ID
 
-                    fetch("fetch_modaldata.php?id=" + recordId)
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log("Fetched Data:", data); // Debugging output
-                            if (data.status === "success") {
-                                // Populate modal fields
-                                document.getElementById("recordId").textContent = data.data.ID;
-                                document.getElementById("fy").value = data.data.FY;
-                                document.getElementById("month").value = data.data.MONTH;
-                                document.getElementById("date").value = data.data.DATE;
-                                document.getElementById("nt_nf").value = data.data.NT_NF;
-                                document.getElementById("category").value = data.data.cat_name;
-                                document.getElementById("trigger").value = data.data.trigger_name;
-                                document.getElementById("issue").value = data.data.ISSUE;
-                                document.getElementById("partNumber").value = data.data.PARTNUMBER;
-                                document.getElementById("partName").value = data.data.PARTNAME;
-                                document.getElementById("lotSublot").value = data.data.LOT_SUBLOT;
-                                document.getElementById("inValue").value = data.data.IN_VALUE;
-                                document.getElementById("outValue").value = data.data.OUT_VALUE;
-                                document.getElementById("reject").value = data.data.REJECT;
-                                document.getElementById("minutes").value = data.data.MINUTES;
-
-                                // Disable all input fields and hide dropdowns when viewing
-                                document.querySelectorAll("#modalForm input, #modalForm select").forEach(input => {
-                                    input.setAttribute("disabled", "true");
-                                });
-
-                                document.querySelectorAll("#modalForm .dropdown-toggle").forEach(btn => {
-                                    btn.classList.add("d-none");
-                                });
-
-                                // Show the modal
-                                let modal = new bootstrap.Modal(document.getElementById("reservationModal"));
-                                modal.show();
-
-                                // Show Edit button, hide Save button
-                                document.getElementById("editButton").classList.remove("d-none");
-                            } else {
-                                // Show SweetAlert if record is not found
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Oops!',
-                                    text: data.message,
-                                    confirmButtonColor: '#d33',
-                                    confirmButtonText: 'OK'
-                                });
-                            }
-                        })
-                        .catch(error => console.error("Error fetching data:", error));
+                    if (recordId) {
+                        // Perform AJAX request to fetch the view-only form
+                        fetch(`fetch_modaldata.php?FPC=${recordId}`)
+                            .then(response => response.text()) // Expect HTML response
+                            .then(data => {
+                                document.getElementById("fpcDetails").innerHTML = data; // Insert the form into the div
+                            })
+                            .catch(error => {
+                                document.getElementById("fpcDetails").innerHTML = '<div class="alert alert-danger">Error fetching data.</div>';
+                                console.error("Error:", error);
+                            });
+                    }
                 });
             });
+
 
             document.getElementById("editButton").addEventListener("click", function() {
                 // Find the active row that was clicked and opened in the modal
@@ -691,7 +469,8 @@ if ($db_type == "access") {
             const deleteButton = document.getElementById("deleteButton");
 
             deleteButton.addEventListener("click", async function() {
-                const recordId = document.getElementById("recordId").textContent.trim(); // Get record ID
+                let activeRow = document.querySelector(".table-row.active");
+                let recordId = activeRow.getAttribute("data-id"); // Get the data-id from the row
 
                 if (!recordId) {
                     alert("Error: No record ID found.");
@@ -736,83 +515,6 @@ if ($db_type == "access") {
                         console.error("Error deleting record:", error);
                         alert("An error occurred while deleting the record.");
                     }
-                }
-            });
-        });
-    </script>
-
-    <script>
-        $(document).ready(function() {
-            var table = new DataTable('#myTable', {
-                info: true,
-                ordering: true,
-                order: [
-                    [0, 'desc']
-                ],
-                layout: {
-                    topStart: 'info',
-                    bottom: 'paging',
-                    bottomStart: null,
-                    bottomEnd: null
-                },
-                initComplete: function() {
-                    let api = this.api();
-                    let $thead = $('#myTable thead');
-
-                    // Add a new row for search inputs
-                    let $searchRow = $('<tr>').addClass('search-row');
-
-                    api.columns().every(function(index) {
-                        let column = this;
-                        let title = $(column.header()).text().trim();
-
-                        // Create input element
-                        let input = $('<input>')
-                            .attr('type', 'text')
-                            .attr('placeholder', `Search ${title}`)
-                            .addClass('column-search');
-
-                        // Append input to new search row
-                        let th = $('<th>').append(input);
-                        $searchRow.append(th);
-
-                        // Event listener for column search
-                        input.on('keyup', function() {
-                            column.search($(this).val()).draw();
-                        });
-                    });
-
-                    // Insert search row inside the table head
-                    $thead.prepend($searchRow);
-                }
-            });
-
-            document.querySelectorAll('a.toggle-vis').forEach((el) => {
-                el.addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    let columnIdx = parseInt(e.target.getAttribute('data-column'));
-                    let column = table.column(columnIdx);
-                    let isVisible = !column.visible();
-                    column.visible(isVisible);
-
-                    // Hide/show the search input in the search row
-                    let searchRowTh = document.querySelector(`.search-row th:nth-child(${columnIdx + 1})`);
-                    if (searchRowTh) {
-                        searchRowTh.style.display = isVisible ? '' : 'none';
-                    }
-                });
-            });
-            // Update the dropdown to highlight hidden columns
-            table.on('column-visibility', function(e, settings, column, state) {
-                var columnIndex = column;
-                var dropdownItem = $('.dropdown-item[data-column="' + columnIndex + '"]');
-
-                // If the column is hidden, add a class to the corresponding dropdown item
-                if (!state) {
-                    dropdownItem.addClass('highlight-hidden');
-                } else {
-                    dropdownItem.removeClass('highlight-hidden');
                 }
             });
         });
