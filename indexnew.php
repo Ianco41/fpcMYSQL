@@ -266,6 +266,7 @@ if ($db_type == "access") {
             font-size: 10px;
         }
     </style>
+    
 </head>
 
 <body class="bg-white">
@@ -429,7 +430,7 @@ if ($db_type == "access") {
                     <div class="card-title">
                         <h5 class="mb-3">Informative Charts</h5>
                     </div>
-                    <div class="table-container table-responsive mt-3">
+                    <div id="chartContainer" class="table-container table-responsive mt-3">
                     </div>
                 </div>
             </div>
@@ -552,6 +553,7 @@ if ($db_type == "access") {
     <script src="assets/vendor/bootstrap/js/fontawesome.min.js"></script>
     <script src="assets/DataTables/datatables.min.js"></script>
     <script src="assets/js/sweetalert2.min.js"></script>
+    <script src="assets/js/echarts.min.js"></script>
     <!-- DataTable Initialization -->
     <script>
         $(document).ready(function() {
@@ -821,6 +823,61 @@ if ($db_type == "access") {
             // Submit the form when the user selects a new year
             document.getElementById("year-form").submit();
         });
+    </script>
+    <script>
+        // Function to extract data from the table
+        function getTableData() {
+            let table = document.getElementById("myTable");
+            let categories = [];
+            let values = [];
+
+            // Loop through table rows (skip header)
+            for (let i = 1; i < table.rows.length; i++) {
+                let row = table.rows[i];
+                categories.push(row.cells[0].textContent); // First column (Category)
+                values.push(parseInt(row.cells[11].textContent)); // Second column (Sales)
+            }
+
+            return {
+                categories,
+                values
+            };
+        }
+
+        // Get data from table
+        let tableData = getTableData();
+
+        // Initialize ECharts
+        var chart = echarts.init(document.getElementById('chartContainer'));
+
+        // Define chart options using extracted table data
+        var options = {
+            title: {
+                text: 'QTY IN',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            xAxis: {
+                type: 'category',
+                data: tableData.categories
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [{
+                type: 'bar',
+                data: tableData.values,
+                barWidth: '50%',
+                itemStyle: {
+                    color: 'blue'
+                }
+            }]
+        };
+
+        // Render the chart
+        chart.setOption(options);
     </script>
 </body>
 
