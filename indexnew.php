@@ -78,6 +78,26 @@ if ($db_type == "access") {
         .dropdown-menu .dropdown-item {
             cursor: default;
         }
+        .table-container {
+            height: 90vh;
+            /* Adjust based on requirement */
+            overflow: auto;
+            /* Prevent content overflow */
+        }
+
+        .search-row th {
+            text-align: center;
+            background: #f8f9fa;
+            padding: 5px;
+        }
+
+        .column-search {
+            width: 100%;
+            padding: 4px;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
         th {
             font-size: 12px;
@@ -271,19 +291,6 @@ if ($db_type == "access") {
                 <div class="modal-footer">
                     <button id="editButton" class="btn btn-primary">Edit</button>
                     <button id="deleteButton" class="btn btn-danger">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel">Edit Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="editFpcDetails">
                 </div>
             </div>
         </div>
